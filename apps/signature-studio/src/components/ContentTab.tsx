@@ -36,12 +36,21 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error(`"${file.name}" isn't an image file. Please use a PNG or JPG.`);
+      return;
+    }
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > 20) {
+      toast.error(`File is ${sizeMB.toFixed(1)} MB — max is 20 MB. Resize it first (signature logos display at ~150px, so a smaller export works great).`);
+      return;
+    }
     try {
       const { url } = await upload(file);
       updateField(field, [{ url, filename: file.name }]);
       toast.success(`${label} uploaded`);
-    } catch {
-      toast.error('Upload failed');
+    } catch (err: any) {
+      toast.error(err?.message || 'Upload failed — please try a smaller file or different format.');
     }
   };
 
@@ -76,6 +85,7 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
         <Upload className="h-3 w-3" />
         {isUploading ? 'Uploading…' : `Upload ${label.toLowerCase()}`}
       </p>
+      <p className="mt-0.5 text-[10px] text-muted-foreground/50">PNG or JPG under 20 MB</p>
     </div>
   );
 }
