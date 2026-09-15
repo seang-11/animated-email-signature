@@ -42,6 +42,11 @@ export default createEndpoint({
     // Order: email, phone, website, address
     const iconPx = Math.round(fontSize * 0.95);
     const iconUrl = (name: string) => `https://img.icons8.com/ios-filled/50/${accent.replace('#', '')}/${name}.png`;
+    // Website may be entered with or without a scheme — normalize so the link
+    // always resolves (and never becomes https://https://...).
+    const rawSite = (s.website || '').trim();
+    const siteHref = /^https?:\/\//i.test(rawSite) ? rawSite : `https://${rawSite}`;
+    const siteLabel = rawSite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
     const contactRows: string[] = [];
     function addRow(iconName: string, content: string) {
       contactRows.push(
@@ -50,7 +55,7 @@ export default createEndpoint({
     }
     if (s.emailAddress) addRow('new-post', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
     if (s.phone) addRow('phone', `<span style="color:${textColor};">${s.phone}</span>`);
-    if (s.website) addRow('domain', `<a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a>`);
+    if (s.website) addRow('domain', `<a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a>`);
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
     if (addressParts) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
 
@@ -98,7 +103,7 @@ export default createEndpoint({
       ${s.jobTitle ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.jobTitle}</span>` : ''}
       ${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}
       ${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}
-      ${s.website ? ` <span style="font-size:${fontSize - 2}px;"><a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a></span>` : ''}
+      ${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}
     </td>
   </tr>
 </table>`;

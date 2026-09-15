@@ -18,6 +18,18 @@ function contactIcon(name: string, hex: string) {
   return `https://img.icons8.com/ios-filled/50/${hex.replace('#', '')}/${name}.png`;
 }
 
+/** Website may be entered with or without a scheme — normalize so the link
+ *  always resolves (and never becomes https://https://...). */
+function webUrl(raw: string) {
+  const v = raw.trim();
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+}
+
+/** Display form: drop the scheme and any trailing slash for a clean label. */
+function webLabel(raw: string) {
+  return raw.trim().replace(/^https?:\/\//i, '').replace(/\/$/, '');
+}
+
 function ContactRow({ icon, content, fontSize }: { icon: string; content: JSX.Element; fontSize: number }) {
   const iconPx = Math.round(fontSize * 0.95);
   return (
@@ -56,7 +68,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const contactLines: ContactLine[] = [];
   if (sig.emailAddress) contactLines.push({ icon: contactIcon('new-post', accent), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
   if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent), content: <span style={{ color: textColor }}>{sig.phone}</span> });
-  if (sig.website) contactLines.push({ icon: contactIcon('domain', accent), content: <a href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>{sig.website}</a> });
+  if (sig.website) contactLines.push({ icon: contactIcon('domain', accent), content: <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a> });
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
   if (addr) contactLines.push({ icon: contactIcon('marker', accent), content: <span style={{ color: textColor }}>{addr}</span> });
 
@@ -125,6 +137,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
           {sig.jobTitle && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.jobTitle}</span>}
           {sig.emailAddress && <span style={{ fontSize: fontSize - 2 }}> | <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a></span>}
           {sig.phone && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.phone}</span>}
+          {sig.website && <span style={{ fontSize: fontSize - 2 }}> | <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a></span>}
         </div>
       </div>
     );
