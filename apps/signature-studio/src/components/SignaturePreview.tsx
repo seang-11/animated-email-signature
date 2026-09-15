@@ -12,6 +12,10 @@ const SOCIAL_ICONS: Record<string, { src: string; label: string }> = {
 type ContactLine = { icon: string; content: JSX.Element };
 
 function contactIcon(name: string, hex: string, style: string) {
+  if (style === 'dark_mode_safe') {
+    // White glyph — rendered inside a colored circle for dark-mode safety
+    return `https://img.icons8.com/ios-filled/50/FFFFFF/${name}.png`;
+  }
   const iconStyle = style === 'outlined' ? 'ios' : 'ios-filled';
   return `https://img.icons8.com/${iconStyle}/50/${hex.replace('#', '')}/${name}.png`;
 }
@@ -25,20 +29,29 @@ function webLabel(raw: string) {
   return raw.trim().replace(/^https?:\/\//i, '').replace(/\/$/, '');
 }
 
-function ContactRow({ icon, content, fontSize, showIcon }: { icon: string; content: JSX.Element; fontSize: number; showIcon: boolean }) {
+function ContactRow({ icon, content, fontSize, showIcon, isDarkSafe, accent }: { icon: string; content: JSX.Element; fontSize: number; showIcon: boolean; isDarkSafe: boolean; accent: string }) {
   const iconPx = Math.round(fontSize * 0.95);
+  const chipSize = iconPx + 8;
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: showIcon ? 7 : 0, marginBottom: 3 }}>
       {showIcon && (
-        <img
-          src={icon}
-          alt=""
-          width={iconPx}
-          height={iconPx}
-          style={{ flexShrink: 0, marginTop: Math.round(fontSize * 0.25), display: 'block' }}
-        />
+        isDarkSafe ? (
+          <div style={{
+            width: chipSize, height: chipSize, borderRadius: '50%',
+            backgroundColor: accent, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', flexShrink: 0,
+            marginTop: Math.round(fontSize * 0.15),
+          }}>
+            <img src={icon} alt="" width={iconPx} height={iconPx} style={{ display: 'block' }} />
+          </div>
+        ) : (
+          <img
+            src={icon} alt="" width={iconPx} height={iconPx}
+            style={{ flexShrink: 0, marginTop: Math.round(fontSize * 0.25), display: 'block' }}
+          />
+        )
       )}
-      <span style={{ fontSize, lineHeight: `${fontSize + 6}px` }}>{content}</span>
+      <span style={{ fontSize, lineHeight: `${fontSize + 6}px`, marginTop: isDarkSafe && showIcon ? 2 : 0 }}>{content}</span>
     </div>
   );
 }
@@ -70,6 +83,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const showAddress = sig.showAddress !== false;
   const showSocials = sig.showSocials !== false;
   const showContactIcons = contactIconStyle !== 'none';
+  const isDarkSafe = contactIconStyle === 'dark_mode_safe';
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => sig[key])
@@ -86,7 +100,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const contactBlock = contactLines.length > 0 && (
     <div style={{ marginTop: spacing }}>
       {contactLines.map((cl, i) => (
-        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} />
+        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} isDarkSafe={isDarkSafe} accent={accent} />
       ))}
     </div>
   );

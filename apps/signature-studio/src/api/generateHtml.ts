@@ -39,6 +39,7 @@ export default createEndpoint({
     const showAddress = (s as any).showAddress !== false;
     const showSocials = (s as any).showSocials !== false;
     const showContactIcons = contactIconStyle !== 'none';
+    const isDarkSafe = contactIconStyle === 'dark_mode_safe';
 
     const socials: { url: string; icon: string; label: string }[] = [];
     if (s.linkedInUrl) socials.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
@@ -53,8 +54,10 @@ export default createEndpoint({
     ).join('') : '';
 
     const iconPx = Math.round(fontSize * 0.95);
-    const iconStylePath = contactIconStyle === 'outlined' ? 'ios' : 'ios-filled';
-    const iconUrl = (name: string) => `https://img.icons8.com/${iconStylePath}/50/${accent.replace('#', '')}/${name}.png`;
+    const chipSize = iconPx + 8;
+    const iconStylePath = isDarkSafe ? 'ios-filled' : (contactIconStyle === 'outlined' ? 'ios' : 'ios-filled');
+    const iconColor = isDarkSafe ? 'FFFFFF' : accent.replace('#', '');
+    const iconUrl = (name: string) => `https://img.icons8.com/${iconStylePath}/50/${iconColor}/${name}.png`;
     const rawSite = (s.website || '').trim();
     const siteHref = /^https?:\/\//i.test(rawSite) ? rawSite : `https://${rawSite}`;
     const siteLabel = rawSite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
@@ -62,9 +65,16 @@ export default createEndpoint({
     const contactRows: string[] = [];
     function addRow(iconName: string, content: string) {
       if (showContactIcons) {
-        contactRows.push(
-          `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
-        );
+        if (isDarkSafe) {
+          // White icon inside an accent-colored circle — survives Gmail dark mode
+          contactRows.push(
+            `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><table cellpadding="0" cellspacing="0" border="0"><tr><td width="${chipSize}" height="${chipSize}" style="width:${chipSize}px;height:${chipSize}px;background-color:${accent};border-radius:50%;text-align:center;vertical-align:middle;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:inline-block;" /></td></tr></table></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:3px 0;">${content}</td></tr>`
+          );
+        } else {
+          contactRows.push(
+            `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
+          );
+        }
       } else {
         contactRows.push(
           `<tr><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:2px 0;">${content}</td></tr>`

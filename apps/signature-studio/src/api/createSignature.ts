@@ -50,7 +50,7 @@ export default createEndpoint({
       companyBold: false,
       socialPosition: 'under_details',
       socialIconSize: 24,
-      contactIconStyle: 'filled',
+      contactIconStyle: 'dark_mode_safe',
       showCompany: true,
       showTagline: true,
       showAddress: true,

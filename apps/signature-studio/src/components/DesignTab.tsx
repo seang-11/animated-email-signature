@@ -66,7 +66,7 @@ const DEFAULTS: Record<string, any> = {
   companyBold: false,
   socialPosition: 'under_details',
   socialIconSize: 24,
-  contactIconStyle: 'filled',
+  contactIconStyle: 'dark_mode_safe',
   showCompany: true,
   showTagline: true,
   showAddress: true,
@@ -187,6 +187,7 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
               <SelectContent>
                 <SelectItem value="filled">Filled</SelectItem>
                 <SelectItem value="outlined">Outlined</SelectItem>
+                <SelectItem value="dark_mode_safe">Dark mode safe</SelectItem>
                 <SelectItem value="none">No icons</SelectItem>
               </SelectContent>
             </Select>
