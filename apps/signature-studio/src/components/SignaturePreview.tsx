@@ -84,6 +84,9 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const showSocials = sig.showSocials !== false;
   const showContactIcons = contactIconStyle !== 'none';
   const isDarkSafe = contactIconStyle === 'dark_mode_safe';
+  const logoAlign = sig.logoAlignment || 'top';
+  const contactLayout = sig.contactLayout || 'stacked';
+  const logoAlignMap: Record<string, string> = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => sig[key])
@@ -97,13 +100,26 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
   if (addr && showAddress) contactLines.push({ icon: contactIcon('marker', accent, contactIconStyle), content: <span style={{ color: textColor }}>{addr}</span> });
 
-  const contactBlock = contactLines.length > 0 && (
-    <div style={{ marginTop: spacing }}>
-      {contactLines.map((cl, i) => (
-        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} isDarkSafe={isDarkSafe} accent={accent} />
-      ))}
-    </div>
-  );
+  const contactBlock = contactLines.length > 0 && (() => {
+    if (contactLayout === 'two_column' && contactLines.length >= 3) {
+      const mid = Math.ceil(contactLines.length / 2);
+      const left = contactLines.slice(0, mid);
+      const right = contactLines.slice(mid);
+      return (
+        <div style={{ marginTop: spacing, display: 'flex', gap: 20 }}>
+          <div>{left.map((cl, i) => <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} isDarkSafe={isDarkSafe} accent={accent} />)}</div>
+          <div>{right.map((cl, i) => <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} isDarkSafe={isDarkSafe} accent={accent} />)}</div>
+        </div>
+      );
+    }
+    return (
+      <div style={{ marginTop: spacing }}>
+        {contactLines.map((cl, i) => (
+          <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} isDarkSafe={isDarkSafe} accent={accent} />
+        ))}
+      </div>
+    );
+  })();
 
   // Company line
   const companyLine = sig.company && showCompany && (
@@ -199,13 +215,13 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const hasRightContent = bannerUrl || (showTagline && sig.tagline) || socialPosition === 'right_column';
 
   return (
-    <div style={{ fontFamily: `${bodyFont}, sans-serif`, display: 'flex', gap: 0, maxWidth: 600 }}>
+    <div style={{ fontFamily: `${bodyFont}, sans-serif`, display: 'flex', alignItems: logoAlignMap[logoAlign] || 'flex-start', gap: 0, maxWidth: 600 }}>
       {logoUrl && (
         <div style={{ paddingRight: 16, flexShrink: 0 }}>
           <img src={logoUrl} width={logoSize} height={logoSize} alt="Logo" />
         </div>
       )}
-      {divider && <div style={{ width: 1, background: '#ddd', marginRight: 16, flexShrink: 0 }} />}
+      {divider && <div style={{ width: 1, background: '#ddd', marginRight: 16, flexShrink: 0, alignSelf: 'stretch' }} />}
       <div style={{ flexGrow: 1 }}>
         {nameLine}
         {companyLine}

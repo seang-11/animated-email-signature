@@ -492,6 +492,57 @@
               "decimalPlaces": 1
             }
           }
+        },
+        {
+          "id": "f3vQMcBGbbs",
+          "sdkName": "logoAlignment",
+          "definition": {
+            "name": "Logo Alignment",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "cX6P",
+                  "label": "Top",
+                  "color": "purple"
+                },
+                {
+                  "value": "uDwJ",
+                  "label": "Middle",
+                  "color": "orange"
+                },
+                {
+                  "value": "2fAp",
+                  "label": "Bottom",
+                  "color": "blue"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "fsd4ZH1mrwk",
+          "sdkName": "contactLayout",
+          "definition": {
+            "name": "Contact Layout",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "nDDG",
+                  "label": "Stacked",
+                  "color": "purple"
+                },
+                {
+                  "value": "h8zV",
+                  "label": "Two Column",
+                  "color": "orange"
+                }
+              ],
+              "disableColors": false
+            }
+          }
         }
       ]
     }

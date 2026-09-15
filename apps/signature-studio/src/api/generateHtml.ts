@@ -40,6 +40,9 @@ export default createEndpoint({
     const showSocials = (s as any).showSocials !== false;
     const showContactIcons = contactIconStyle !== 'none';
     const isDarkSafe = contactIconStyle === 'dark_mode_safe';
+    const logoAlign = (s as any).logoAlignment || 'top';
+    const contactLayout = (s as any).contactLayout || 'stacked';
+    const vAlignMap: Record<string, string> = { top: 'top', middle: 'middle', bottom: 'bottom' };
 
     const socials: { url: string; icon: string; label: string }[] = [];
     if (s.linkedInUrl) socials.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
@@ -87,9 +90,17 @@ export default createEndpoint({
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
     if (addressParts && showAddress) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
 
-    const contactTable = contactRows.length > 0
-      ? `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`
-      : '';
+    let contactTable = '';
+    if (contactRows.length > 0) {
+      if (contactLayout === 'two_column' && contactRows.length >= 3) {
+        const mid = Math.ceil(contactRows.length / 2);
+        const leftRows = contactRows.slice(0, mid).join('');
+        const rightRows = contactRows.slice(mid).join('');
+        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;"><tr><td style="vertical-align:top;padding-right:20px;"><table cellpadding="0" cellspacing="0" border="0">${leftRows}</table></td><td style="vertical-align:top;"><table cellpadding="0" cellspacing="0" border="0">${rightRows}</table></td></tr></table>`;
+      } else {
+        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`;
+      }
+    }
 
     const layout = s.layout || 'Logo Left';
 
@@ -153,9 +164,11 @@ export default createEndpoint({
     const socialsInRight = socialPosition === 'right_column' ? socialBlock : '';
     const hasBannerColumn = bannerUrl || taglineHtml || socialsInRight;
 
+    const logoVAlign = vAlignMap[logoAlign] || 'top';
+
     const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
   <tr>
-    <td style="vertical-align:top;padding-right:16px;">
+    <td style="vertical-align:${logoVAlign};padding-right:16px;">
       ${logoUrl ? `<img src="${logoUrl}" width="${logoSize}" height="${logoSize}" style="border:0;display:block;" alt="Logo" />` : ''}
     </td>
     ${divider ? `<td style="vertical-align:top;padding-right:16px;"><div style="width:1px;min-height:80px;background:#ddd;"></div></td>` : ''}

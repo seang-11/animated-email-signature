@@ -138,6 +138,8 @@ export type EmailSignaturesRecordType = {
   showSocials?: boolean;
   /** "Block Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
   blockSpacing?: number;
+  logoAlignment?: "Top" | "Middle" | "Bottom" | string;
+  contactLayout?: "Stacked" | "Two Column" | string;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -184,6 +186,8 @@ export type EmailSignaturesRecordInput = {
   showAddress: string | boolean | null;
   showSocials: string | boolean | null;
   blockSpacing: string | number | null;
+  logoAlignment: "Top" | "Middle" | "Bottom" | string | null;
+  contactLayout: "Stacked" | "Two Column" | string | null;
 };
 
 export interface NotificationLink {

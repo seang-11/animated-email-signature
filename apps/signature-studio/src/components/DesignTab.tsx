@@ -72,6 +72,8 @@ const DEFAULTS: Record<string, any> = {
   showAddress: true,
   showSocials: true,
   blockSpacing: 8,
+  logoAlignment: 'top',
+  contactLayout: 'stacked',
 };
 
 export default function DesignTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
@@ -96,6 +98,29 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
               <p className="text-xs text-muted-foreground">{l.desc}</p>
             </button>
           ))}
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs text-muted-foreground">Logo alignment</Label>
+            <Select value={sig.logoAlignment || 'top'} onValueChange={v => updateField('logoAlignment', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="top">Top</SelectItem>
+                <SelectItem value="middle">Middle</SelectItem>
+                <SelectItem value="bottom">Bottom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Contact layout</Label>
+            <Select value={sig.contactLayout || 'stacked'} onValueChange={v => updateField('contactLayout', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="stacked">Stacked</SelectItem>
+                <SelectItem value="two_column">Two column</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </SectionCard>
 

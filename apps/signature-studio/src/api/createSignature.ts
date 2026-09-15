@@ -56,6 +56,8 @@ export default createEndpoint({
       showAddress: true,
       showSocials: true,
       blockSpacing: 8,
+      logoAlignment: 'top',
+      contactLayout: 'stacked',
       isDefault: false,
       template: input.template || '',
     };
