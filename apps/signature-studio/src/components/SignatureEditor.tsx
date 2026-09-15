@@ -308,12 +308,12 @@ function Header({ justSaved, children }: { justSaved: boolean; children?: React.
     <header className="bg-gradient-to-r from-secondary to-primary">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
-            <img src={LOGO_URL} alt="Prospect Automations" className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm">
+            <img src={LOGO_URL} alt="Prospect Automations" className="h-full w-full object-contain" />
           </div>
           <div className="leading-tight">
-            <h1 className="text-base font-semibold text-white">Signature Studio</h1>
-            <p className="text-[11px] text-white/50">by Prospect Automations</p>
+            <h1 className="text-lg font-semibold text-white">Signature Studio</h1>
+            <p className="text-xs text-white/70">by Prospect Automations</p>
           </div>
         </div>
 
