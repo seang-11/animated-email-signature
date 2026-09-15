@@ -54,7 +54,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
 
   // Build contact lines: email, phone, website, address
   const contactLines: ContactLine[] = [];
-  if (sig.emailAddress) contactLines.push({ icon: contactIcon('email', accent), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
+  if (sig.emailAddress) contactLines.push({ icon: contactIcon('new-post', accent), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
   if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent), content: <span style={{ color: textColor }}>{sig.phone}</span> });
   if (sig.website) contactLines.push({ icon: contactIcon('domain', accent), content: <a href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>{sig.website}</a> });
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');

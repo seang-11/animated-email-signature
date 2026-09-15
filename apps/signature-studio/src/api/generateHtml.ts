@@ -48,7 +48,7 @@ export default createEndpoint({
         `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
       );
     }
-    if (s.emailAddress) addRow('email', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
+    if (s.emailAddress) addRow('new-post', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
     if (s.phone) addRow('phone', `<span style="color:${textColor};">${s.phone}</span>`);
     if (s.website) addRow('domain', `<a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a>`);
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
