@@ -2,5 +2,13 @@
   "id": "dned86lnbt",
   "accessMode": "external",
   "brandKitId": "bk_9XB8kUaS7r",
-  "brandKitThemeHash": "1lxz6lg"
+  "brandKitThemeHash": "1lxz6lg",
+  "authentication": {
+    "signup": "open",
+    "authenticationMethods": {
+      "magicLink": true,
+      "googleSignIn": false,
+      "sso": false
+    }
+  }
 }
