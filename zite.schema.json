@@ -312,6 +312,24 @@
               "deleteRowWhenUserDeleted": true
             }
           }
+        },
+        {
+          "id": "fva6HiKdEZo",
+          "sdkName": "isDefault",
+          "definition": {
+            "name": "Is Default",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "fvwE3W2uyus",
+          "sdkName": "template",
+          "definition": {
+            "name": "Template",
+            "type": "single_line_text",
+            "template": {}
+          }
         }
       ]
     }

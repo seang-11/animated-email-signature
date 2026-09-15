@@ -2,9 +2,27 @@
 
 import { createCaller } from 'zitejs/caller';
 
+import type { default as _CreateSignatureEp } from '../src/api/createSignature';
+import type { default as _DeleteSignatureEp } from '../src/api/deleteSignature';
+import type { default as _DuplicateSignatureEp } from '../src/api/duplicateSignature';
 import type { default as _GenerateHtmlEp } from '../src/api/generateHtml';
 import type { default as _LoadSignatureEp } from '../src/api/loadSignature';
 import type { default as _SaveSignatureEp } from '../src/api/saveSignature';
+
+type _CreateSignatureCfg = typeof _CreateSignatureEp;
+export type CreateSignatureInputType = NonNullable<_CreateSignatureCfg['inputSchema']> extends { _input: infer I } ? I : Parameters<_CreateSignatureCfg['execute']>[0]['input'];
+export type CreateSignatureOutputType = Awaited<ReturnType<_CreateSignatureCfg['execute']>>;
+export const createSignature = createCaller<CreateSignatureInputType, CreateSignatureOutputType>('createSignature');
+
+type _DeleteSignatureCfg = typeof _DeleteSignatureEp;
+export type DeleteSignatureInputType = NonNullable<_DeleteSignatureCfg['inputSchema']> extends { _input: infer I } ? I : Parameters<_DeleteSignatureCfg['execute']>[0]['input'];
+export type DeleteSignatureOutputType = Awaited<ReturnType<_DeleteSignatureCfg['execute']>>;
+export const deleteSignature = createCaller<DeleteSignatureInputType, DeleteSignatureOutputType>('deleteSignature');
+
+type _DuplicateSignatureCfg = typeof _DuplicateSignatureEp;
+export type DuplicateSignatureInputType = NonNullable<_DuplicateSignatureCfg['inputSchema']> extends { _input: infer I } ? I : Parameters<_DuplicateSignatureCfg['execute']>[0]['input'];
+export type DuplicateSignatureOutputType = Awaited<ReturnType<_DuplicateSignatureCfg['execute']>>;
+export const duplicateSignature = createCaller<DuplicateSignatureInputType, DuplicateSignatureOutputType>('duplicateSignature');
 
 type _GenerateHtmlCfg = typeof _GenerateHtmlEp;
 export type GenerateHtmlInputType = NonNullable<_GenerateHtmlCfg['inputSchema']> extends { _input: infer I } ? I : Parameters<_GenerateHtmlCfg['execute']>[0]['input'];
@@ -23,6 +41,9 @@ export const saveSignature = createCaller<SaveSignatureInputType, SaveSignatureO
 
 
 export const api = {
+  createSignature,
+  deleteSignature,
+  duplicateSignature,
   generateHtml,
   loadSignature,
   saveSignature,

@@ -1,7 +1,14 @@
 # Signature Studio
 
-A personal email signature builder for the Magjet brand. Upload your logo and jet banner graphic, fill in contact details and social links, tweak the layout/colors/fonts, and watch a live preview update in real time. When it looks right, copy the finished signature (as rich content or raw HTML) and paste it into Gmail, Outlook, or Apple Mail.
+A branded email signature builder by Prospect Automations. Users sign in, pick a template (or start blank), and design a professional email signature with a live preview. Each person can create multiple signatures — e.g. a full one for new emails and a compact one for replies — with a switcher in the header.
 
-**Who it's for:** Miguel A. Gutierrez II — a single-user tool for maintaining and exporting a professional email signature.
+**Who it's for:** Prospect Automations team members and anyone the link is shared with.
 
-**Not included (yet):** Animated GIF banners, multiple saved variants, team accounts.
+**Key capabilities:**
+- Template gallery with six professionally-designed starting points
+- Live preview inside a faux email window
+- Content editing: name, title, contact details, social links, logo & banner uploads
+- Design controls: layout, colors, fonts, sizing, divider & icon styles
+- Multiple signatures per person with default, rename, duplicate, delete
+- Undo/redo with keyboard shortcuts (Cmd+Z / Cmd+Shift+Z) and revert-to-saved
+- Export: copy rich signature, copy HTML source, or download .html — with per-client setup instructions for Gmail, Outlook, and Apple Mail

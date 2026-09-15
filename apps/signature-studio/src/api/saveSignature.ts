@@ -15,6 +15,20 @@ export default createEndpoint({
     if (!sig || !sig.owner?.includes(context.user.id)) {
       throw new Error('Signature not found or not yours');
     }
+
+    // If setting this as default, unset the current default first
+    if (input.fields.isDefault === true && !sig.isDefault) {
+      const { records } = await zite.emailSignatures.findAll({
+        filters: { owner: context.user.id, isDefault: true },
+        limit: 10,
+      });
+      for (const r of records) {
+        if (r.id !== input.id) {
+          await zite.emailSignatures.update({ id: r.id, record: { isDefault: false } });
+        }
+      }
+    }
+
     const result = await zite.emailSignatures.update({
       id: input.id,
       record: input.fields as any,

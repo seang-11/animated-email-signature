@@ -122,6 +122,8 @@ export type EmailSignaturesRecordType = {
   /** "Banner Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   bannerSize?: number;
   owner?: string | string[];
+  isDefault?: boolean;
+  template?: string;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -155,6 +157,8 @@ export type EmailSignaturesRecordInput = {
   roundSocialIcons: string | boolean | null;
   bannerSize: string | number | null;
   owner: string | string[] | null;
+  isDefault: string | boolean | null;
+  template: string | null;
 };
 
 export interface NotificationLink {
