@@ -1,3 +1,294 @@
 {
-  "tables": []
+  "tables": [
+    {
+      "id": "taehNUByLNU",
+      "sdkName": "emailSignatures",
+      "name": "Email Signatures",
+      "primaryFieldId": "f7qF7ncdGNk",
+      "fields": [
+        {
+          "id": "f7qF7ncdGNk",
+          "sdkName": "signatureName",
+          "definition": {
+            "name": "Signature Name",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fiQHdn1KCLD",
+          "sdkName": "fullName",
+          "definition": {
+            "name": "Full Name",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fpPV1CdMH2x",
+          "sdkName": "jobTitle",
+          "definition": {
+            "name": "Job Title",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fxxmDiAcwSz",
+          "sdkName": "company",
+          "definition": {
+            "name": "Company",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fg1rzhq5cr3",
+          "sdkName": "tagline",
+          "definition": {
+            "name": "Tagline",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fqq5sc5f9Bi",
+          "sdkName": "phone",
+          "definition": {
+            "name": "Phone",
+            "type": "phone_number",
+            "template": {}
+          }
+        },
+        {
+          "id": "fngZyC2keiT",
+          "sdkName": "emailAddress",
+          "definition": {
+            "name": "Email Address",
+            "type": "email",
+            "template": {}
+          }
+        },
+        {
+          "id": "f9DwDFpEfsU",
+          "sdkName": "website",
+          "definition": {
+            "name": "Website",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "ftgs3HT5NKD",
+          "sdkName": "addressLine1",
+          "definition": {
+            "name": "Address Line 1",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fkrtqBTNTXe",
+          "sdkName": "addressLine2",
+          "definition": {
+            "name": "Address Line 2",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fqidfQ5hkfA",
+          "sdkName": "logo",
+          "definition": {
+            "name": "Logo",
+            "type": "attachments",
+            "template": {}
+          }
+        },
+        {
+          "id": "f4czN4nmkua",
+          "sdkName": "bannerImage",
+          "definition": {
+            "name": "Banner Image",
+            "type": "attachments",
+            "template": {}
+          }
+        },
+        {
+          "id": "fvyL9VYybyZ",
+          "sdkName": "linkedInUrl",
+          "definition": {
+            "name": "LinkedIn URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fpFxuRZUmir",
+          "sdkName": "instagramUrl",
+          "definition": {
+            "name": "Instagram URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fnn9jVPoNCh",
+          "sdkName": "facebookUrl",
+          "definition": {
+            "name": "Facebook URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "f3nqd4Lgouu",
+          "sdkName": "threadsUrl",
+          "definition": {
+            "name": "Threads URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fajq2PoGNe4",
+          "sdkName": "xUrl",
+          "definition": {
+            "name": "X URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "f9tPHwtqQg4",
+          "sdkName": "tikTokUrl",
+          "definition": {
+            "name": "TikTok URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fpghHbWigtT",
+          "sdkName": "layout",
+          "definition": {
+            "name": "Layout",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "4sbg",
+                  "label": "Logo Left",
+                  "color": "purple"
+                },
+                {
+                  "value": "2bfV",
+                  "label": "Stacked",
+                  "color": "orange"
+                },
+                {
+                  "value": "1ZBk",
+                  "label": "Compact",
+                  "color": "blue"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "fhbSRMZxapR",
+          "sdkName": "accentColor",
+          "definition": {
+            "name": "Accent Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fhaTjFw6pfG",
+          "sdkName": "textColor",
+          "definition": {
+            "name": "Text Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "frAvxQo8HCz",
+          "sdkName": "headingFont",
+          "definition": {
+            "name": "Heading Font",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f27NeJLXDmb",
+          "sdkName": "bodyFont",
+          "definition": {
+            "name": "Body Font",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fn4wP7KHNg7",
+          "sdkName": "logoSize",
+          "definition": {
+            "name": "Logo Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fuehDfPRc9U",
+          "sdkName": "baseTextSize",
+          "definition": {
+            "name": "Base Text Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "f8TEsvMWkFj",
+          "sdkName": "showDivider",
+          "definition": {
+            "name": "Show Divider",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "f77J7pF9ox3",
+          "sdkName": "roundSocialIcons",
+          "definition": {
+            "name": "Round Social Icons",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "fdFyygFLEPQ",
+          "sdkName": "lastUpdated",
+          "definition": {
+            "name": "Last Updated",
+            "type": "updated_at",
+            "template": {
+              "timezone": "",
+              "dateFormat": "local",
+              "timeFormat": "12h",
+              "displayTimeZone": false
+            }
+          }
+        }
+      ]
+    }
+  ]
 }
