@@ -299,6 +299,19 @@
               "decimalPlaces": 1
             }
           }
+        },
+        {
+          "id": "fa2LxreHD4d",
+          "sdkName": "owner",
+          "definition": {
+            "name": "Owner",
+            "type": "user",
+            "template": {
+              "internalOnly": false,
+              "allowMultiple": false,
+              "deleteRowWhenUserDeleted": true
+            }
+          }
         }
       ]
     }

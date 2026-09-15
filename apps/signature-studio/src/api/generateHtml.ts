@@ -7,9 +7,11 @@ export default createEndpoint({
   authenticated: true,
   inputSchema: z.object({ id: z.string() }),
   outputSchema: z.object({ html: z.string() }),
-  execute: async ({ input }) => {
+  execute: async ({ input, context }) => {
     const sig = await zite.emailSignatures.findOne({ id: input.id });
-    if (!sig) throw new Error('Signature not found');
+    if (!sig || !sig.owner?.includes(context.user.id)) {
+      throw new Error('Signature not found or not yours');
+    }
 
     const s = sig;
     const accent = s.accentColor || '#111111';
@@ -36,17 +38,12 @@ export default createEndpoint({
       `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="24" height="24" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
     ).join('');
 
-    // Build contact rows as a nested table for email-client reliability.
-    // Icons8 serves PNGs tinted to any hex via the URL path, so icons follow
-    // the accent color and render identically in every client (unlike emoji).
-    // Order: email, phone, website, address
     const iconPx = Math.round(fontSize * 0.95);
     const iconUrl = (name: string) => `https://img.icons8.com/ios-filled/50/${accent.replace('#', '')}/${name}.png`;
-    // Website may be entered with or without a scheme — normalize so the link
-    // always resolves (and never becomes https://https://...).
     const rawSite = (s.website || '').trim();
     const siteHref = /^https?:\/\//i.test(rawSite) ? rawSite : `https://${rawSite}`;
     const siteLabel = rawSite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+
     const contactRows: string[] = [];
     function addRow(iconName: string, content: string) {
       contactRows.push(
@@ -65,8 +62,6 @@ export default createEndpoint({
 
     const layout = s.layout || 'Logo Left';
 
-    // Name + job title on one line, behind a thin accent rule.
-    // Table-based so the rule keeps its height in every email client.
     const nameLine = `<table cellpadding="0" cellspacing="0" border="0"><tr>
       <td width="3" style="width:3px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
       <td style="padding-left:10px;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;line-height:${fontSize + 12}px;color:${accent};">
