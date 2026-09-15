@@ -4,7 +4,7 @@ import { Slider } from '@project/components/ui/slider';
 import { Switch } from '@project/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@project/components/ui/select';
 import { Button } from '@project/components/ui/button';
-import { RotateCcw, LayoutGrid, Palette, Type, Maximize2, SlidersHorizontal } from 'lucide-react';
+import { RotateCcw, LayoutGrid, Palette, Type, Maximize2, Space, Share2, Eye, SlidersHorizontal } from 'lucide-react';
 import type { SigData } from './SignatureEditor';
 
 function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
@@ -21,6 +21,26 @@ function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType;
   );
 }
 
+function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/30">
+      <span className="text-sm text-foreground">{label}</span>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+function SliderRow({ label, value, min, max, step, unit, onChange }: { label: string; value: number; min: number; max: number; step: number; unit?: string; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{label}</span><span>{value}{unit || ' px'}</span>
+      </div>
+      <Slider value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} className="mt-2" />
+    </div>
+  );
+}
+
 const LAYOUTS = [
   { value: 'Logo Left', label: 'Logo Left', desc: 'Classic side-by-side' },
   { value: 'Stacked', label: 'Stacked', desc: 'Top-down vertical' },
@@ -28,10 +48,10 @@ const LAYOUTS = [
 ];
 
 const FONTS = ['Arial', 'Georgia', 'Helvetica', 'Times New Roman', 'Verdana', 'Trebuchet MS', 'Courier New'];
-
 const PRESET_COLORS = ['#111111', '#3E6FE7', '#1a1a2e', '#b40407', '#2d6a4f', '#7c3aed'];
 
-const DEFAULTS = {
+const DEFAULTS: Record<string, any> = {
+  layout: 'Logo Left',
   accentColor: '#111111',
   textColor: '#333333',
   headingFont: 'Arial',
@@ -41,7 +61,17 @@ const DEFAULTS = {
   baseTextSize: 14,
   showDivider: true,
   roundSocialIcons: true,
-  layout: 'Logo Left',
+  companySize: 13,
+  companyColor: '',
+  companyBold: false,
+  socialPosition: 'under_details',
+  socialIconSize: 24,
+  contactIconStyle: 'filled',
+  showCompany: true,
+  showTagline: true,
+  showAddress: true,
+  showSocials: true,
+  blockSpacing: 8,
 };
 
 export default function DesignTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
@@ -51,6 +81,7 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
 
   return (
     <div className="space-y-5">
+      {/* Layout */}
       <SectionCard icon={LayoutGrid} title="Layout">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {LAYOUTS.map(l => (
@@ -68,11 +99,12 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
         </div>
       </SectionCard>
 
+      {/* Colors */}
       <SectionCard icon={Palette} title="Colors">
         <div className="space-y-3">
           <div>
             <Label className="text-xs text-muted-foreground">Accent color</Label>
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center gap-2">
               {PRESET_COLORS.map(c => (
                 <button
                   key={c}
@@ -83,24 +115,21 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
                   style={{ background: c }}
                 />
               ))}
-              <Input
-                value={sig.accentColor || '#111111'}
-                onChange={e => updateField('accentColor', e.target.value)}
-                className="ml-2 w-28 font-mono text-sm"
-              />
+              <Input value={sig.accentColor || '#111111'} onChange={e => updateField('accentColor', e.target.value)} className="ml-1 w-28 font-mono text-sm" />
             </div>
           </div>
           <div>
             <Label className="text-xs text-muted-foreground">Text color</Label>
-            <Input
-              value={sig.textColor || '#333333'}
-              onChange={e => updateField('textColor', e.target.value)}
-              className="mt-1 w-28 font-mono text-sm"
-            />
+            <Input value={sig.textColor || '#333333'} onChange={e => updateField('textColor', e.target.value)} className="mt-1 w-28 font-mono text-sm" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Company color</Label>
+            <Input value={sig.companyColor || ''} onChange={e => updateField('companyColor', e.target.value)} placeholder="Inherits text color" className="mt-1 w-28 font-mono text-sm" />
           </div>
         </div>
       </SectionCard>
 
+      {/* Typeface */}
       <SectionCard icon={Type} title="Typeface">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
@@ -120,54 +149,60 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
         </div>
       </SectionCard>
 
+      {/* Sizing */}
       <SectionCard icon={Maximize2} title="Sizing">
         <div className="space-y-4">
+          <SliderRow label="Logo size" value={sig.logoSize || 96} min={32} max={160} step={4} onChange={v => updateField('logoSize', v)} />
+          <SliderRow label="Banner size" value={sig.bannerSize || 180} min={100} max={400} step={10} onChange={v => updateField('bannerSize', v)} />
+          <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
+          <SliderRow label="Company text size" value={sig.companySize || 13} min={9} max={18} step={1} onChange={v => updateField('companySize', v)} />
+        </div>
+      </SectionCard>
+
+      {/* Spacing */}
+      <SectionCard icon={Space} title="Spacing">
+        <SliderRow label="Block spacing" value={sig.blockSpacing ?? 8} min={2} max={20} step={1} onChange={v => updateField('blockSpacing', v)} />
+      </SectionCard>
+
+      {/* Social Icons */}
+      <SectionCard icon={Share2} title="Social Icons">
+        <div className="space-y-3">
           <div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Logo size</span><span>{sig.logoSize || 96} px</span>
-            </div>
-            <Slider
-              value={[sig.logoSize || 96]}
-              onValueChange={([v]) => updateField('logoSize', v)}
-              min={32} max={160} step={4}
-              className="mt-2"
-            />
+            <Label className="text-xs text-muted-foreground">Position</Label>
+            <Select value={sig.socialPosition || 'under_details'} onValueChange={v => updateField('socialPosition', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="under_details">Under details</SelectItem>
+                <SelectItem value="right_column">Right column</SelectItem>
+                <SelectItem value="under_banner">Under banner</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          <SliderRow label="Icon size" value={sig.socialIconSize || 24} min={16} max={40} step={2} onChange={v => updateField('socialIconSize', v)} />
+          <ToggleRow label="Round icons" checked={sig.roundSocialIcons !== false} onChange={v => updateField('roundSocialIcons', v)} />
           <div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Banner size</span><span>{sig.bannerSize || 180} px</span>
-            </div>
-            <Slider
-              value={[sig.bannerSize || 180]}
-              onValueChange={([v]) => updateField('bannerSize', v)}
-              min={100} max={400} step={10}
-              className="mt-2"
-            />
-          </div>
-          <div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Base text size</span><span>{sig.baseTextSize || 14} px</span>
-            </div>
-            <Slider
-              value={[sig.baseTextSize || 14]}
-              onValueChange={([v]) => updateField('baseTextSize', v)}
-              min={10} max={20} step={1}
-              className="mt-2"
-            />
+            <Label className="text-xs text-muted-foreground">Contact icon style</Label>
+            <Select value={sig.contactIconStyle || 'filled'} onValueChange={v => updateField('contactIconStyle', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="filled">Filled</SelectItem>
+                <SelectItem value="outlined">Outlined</SelectItem>
+                <SelectItem value="none">No icons</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </SectionCard>
 
-      <SectionCard icon={SlidersHorizontal} title="Details">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/30">
-            <span className="text-sm text-foreground">Vertical divider</span>
-            <Switch checked={sig.showDivider !== false} onCheckedChange={v => updateField('showDivider', v)} />
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3 transition-colors hover:bg-muted/30">
-            <span className="text-sm text-foreground">Round social icons</span>
-            <Switch checked={sig.roundSocialIcons !== false} onCheckedChange={v => updateField('roundSocialIcons', v)} />
-          </div>
+      {/* Visibility */}
+      <SectionCard icon={Eye} title="Visibility">
+        <div className="space-y-2">
+          <ToggleRow label="Show company" checked={sig.showCompany !== false} onChange={v => updateField('showCompany', v)} />
+          <ToggleRow label="Bold company" checked={sig.companyBold ?? false} onChange={v => updateField('companyBold', v)} />
+          <ToggleRow label="Show tagline" checked={sig.showTagline !== false} onChange={v => updateField('showTagline', v)} />
+          <ToggleRow label="Show address" checked={sig.showAddress !== false} onChange={v => updateField('showAddress', v)} />
+          <ToggleRow label="Show social icons" checked={sig.showSocials !== false} onChange={v => updateField('showSocials', v)} />
+          <ToggleRow label="Vertical divider" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
         </div>
       </SectionCard>
 

@@ -76,15 +76,20 @@ export default function SignatureSwitcher({
             {signatures.map(s => (
               <div key={s.id} className="relative">
                 {renaming === s.id ? (
-                  <div className="flex items-center gap-2 px-3 py-2">
+                  <div className="flex items-center gap-1.5 px-3 py-2">
                     <Input
                       value={renameVal}
                       onChange={e => setRenameVal(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setRenaming(null); }}
-                      onBlur={commitRename}
                       autoFocus
-                      className="h-8 text-sm"
+                      className="h-8 flex-1 text-sm"
                     />
+                    <button
+                      onClick={commitRename}
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
                   </div>
                 ) : (
                   <div

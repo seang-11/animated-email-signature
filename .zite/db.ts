@@ -124,6 +124,20 @@ export type EmailSignaturesRecordType = {
   owner?: string | string[];
   isDefault?: boolean;
   template?: string;
+  /** "Company Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  companySize?: number;
+  companyColor?: string;
+  companyBold?: boolean;
+  socialPosition?: "Under details" | "Right column" | "Under banner" | string;
+  /** "Social Icon Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  socialIconSize?: number;
+  contactIconStyle?: "Filled" | "Outlined" | "None" | string;
+  showCompany?: boolean;
+  showTagline?: boolean;
+  showAddress?: boolean;
+  showSocials?: boolean;
+  /** "Block Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  blockSpacing?: number;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -159,6 +173,17 @@ export type EmailSignaturesRecordInput = {
   owner: string | string[] | null;
   isDefault: string | boolean | null;
   template: string | null;
+  companySize: string | number | null;
+  companyColor: string | null;
+  companyBold: string | boolean | null;
+  socialPosition: "Under details" | "Right column" | "Under banner" | string | null;
+  socialIconSize: string | number | null;
+  contactIconStyle: "Filled" | "Outlined" | "None" | string | null;
+  showCompany: string | boolean | null;
+  showTagline: string | boolean | null;
+  showAddress: string | boolean | null;
+  showSocials: string | boolean | null;
+  blockSpacing: string | number | null;
 };
 
 export interface NotificationLink {

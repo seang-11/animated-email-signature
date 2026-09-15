@@ -330,6 +330,163 @@
             "type": "single_line_text",
             "template": {}
           }
+        },
+        {
+          "id": "f957ocXvYfg",
+          "sdkName": "companySize",
+          "definition": {
+            "name": "Company Size",
+            "type": "number",
+            "template": {
+              "defaultValue": 13,
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "f2hFPnH3pfP",
+          "sdkName": "companyColor",
+          "definition": {
+            "name": "Company Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f1x7sVXk6xZ",
+          "sdkName": "companyBold",
+          "definition": {
+            "name": "Company Bold",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "f9nALzwNHUm",
+          "sdkName": "socialPosition",
+          "definition": {
+            "name": "Social Position",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "njn8",
+                  "label": "Under details",
+                  "color": "purple"
+                },
+                {
+                  "value": "iKny",
+                  "label": "Right column",
+                  "color": "orange"
+                },
+                {
+                  "value": "anST",
+                  "label": "Under banner",
+                  "color": "blue"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "f3qii2qnu53",
+          "sdkName": "socialIconSize",
+          "definition": {
+            "name": "Social Icon Size",
+            "type": "number",
+            "template": {
+              "defaultValue": 24,
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fqX3bqFPbn2",
+          "sdkName": "contactIconStyle",
+          "definition": {
+            "name": "Contact Icon Style",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "rUHU",
+                  "label": "Filled",
+                  "color": "purple"
+                },
+                {
+                  "value": "jL3w",
+                  "label": "Outlined",
+                  "color": "orange"
+                },
+                {
+                  "value": "cpDV",
+                  "label": "None",
+                  "color": "blue"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "ffwTdv27p3c",
+          "sdkName": "showCompany",
+          "definition": {
+            "name": "Show Company",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
+        },
+        {
+          "id": "f7nBKMwUxeb",
+          "sdkName": "showTagline",
+          "definition": {
+            "name": "Show Tagline",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
+        },
+        {
+          "id": "fq4m6XJBXCc",
+          "sdkName": "showAddress",
+          "definition": {
+            "name": "Show Address",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
+        },
+        {
+          "id": "ftBbaHJxjsX",
+          "sdkName": "showSocials",
+          "definition": {
+            "name": "Show Socials",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
+        },
+        {
+          "id": "fmvBcM5CQQW",
+          "sdkName": "blockSpacing",
+          "definition": {
+            "name": "Block Spacing",
+            "type": "number",
+            "template": {
+              "defaultValue": 8,
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
         }
       ]
     }

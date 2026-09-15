@@ -11,36 +11,33 @@ const SOCIAL_ICONS: Record<string, { src: string; label: string }> = {
 
 type ContactLine = { icon: string; content: JSX.Element };
 
-/** Icons8 serves PNGs tinted to any hex color via the URL path, so contact
- *  icons re-tint automatically when the accent color changes, and render
- *  identically on every device (unlike emoji glyphs). */
-function contactIcon(name: string, hex: string) {
-  return `https://img.icons8.com/ios-filled/50/${hex.replace('#', '')}/${name}.png`;
+function contactIcon(name: string, hex: string, style: string) {
+  const iconStyle = style === 'outlined' ? 'ios' : 'ios-filled';
+  return `https://img.icons8.com/${iconStyle}/50/${hex.replace('#', '')}/${name}.png`;
 }
 
-/** Website may be entered with or without a scheme — normalize so the link
- *  always resolves (and never becomes https://https://...). */
 function webUrl(raw: string) {
   const v = raw.trim();
   return /^https?:\/\//i.test(v) ? v : `https://${v}`;
 }
 
-/** Display form: drop the scheme and any trailing slash for a clean label. */
 function webLabel(raw: string) {
   return raw.trim().replace(/^https?:\/\//i, '').replace(/\/$/, '');
 }
 
-function ContactRow({ icon, content, fontSize }: { icon: string; content: JSX.Element; fontSize: number }) {
+function ContactRow({ icon, content, fontSize, showIcon }: { icon: string; content: JSX.Element; fontSize: number; showIcon: boolean }) {
   const iconPx = Math.round(fontSize * 0.95);
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 3 }}>
-      <img
-        src={icon}
-        alt=""
-        width={iconPx}
-        height={iconPx}
-        style={{ flexShrink: 0, marginTop: Math.round(fontSize * 0.25), display: 'block' }}
-      />
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: showIcon ? 7 : 0, marginBottom: 3 }}>
+      {showIcon && (
+        <img
+          src={icon}
+          alt=""
+          width={iconPx}
+          height={iconPx}
+          style={{ flexShrink: 0, marginTop: Math.round(fontSize * 0.25), display: 'block' }}
+        />
+      )}
       <span style={{ fontSize, lineHeight: `${fontSize + 6}px` }}>{content}</span>
     </div>
   );
@@ -59,6 +56,20 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const divider = sig.showDivider !== false;
   const round = sig.roundSocialIcons !== false;
   const layout = sig.layout || 'Logo Left';
+  const spacing = sig.blockSpacing ?? 8;
+
+  // New customization fields
+  const companySize = sig.companySize || 13;
+  const companyColor = sig.companyColor || textColor;
+  const companyBold = sig.companyBold ?? false;
+  const socialPosition = sig.socialPosition || 'under_details';
+  const socialIconSize = sig.socialIconSize || 24;
+  const contactIconStyle = sig.contactIconStyle || 'filled';
+  const showCompany = sig.showCompany !== false;
+  const showTagline = sig.showTagline !== false;
+  const showAddress = sig.showAddress !== false;
+  const showSocials = sig.showSocials !== false;
+  const showContactIcons = contactIconStyle !== 'none';
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => sig[key])
@@ -66,18 +77,31 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
 
   // Build contact lines: email, phone, website, address
   const contactLines: ContactLine[] = [];
-  if (sig.emailAddress) contactLines.push({ icon: contactIcon('new-post', accent), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
-  if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent), content: <span style={{ color: textColor }}>{sig.phone}</span> });
-  if (sig.website) contactLines.push({ icon: contactIcon('domain', accent), content: <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a> });
+  if (sig.emailAddress) contactLines.push({ icon: contactIcon('new-post', accent, contactIconStyle), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
+  if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent, contactIconStyle), content: <span style={{ color: textColor }}>{sig.phone}</span> });
+  if (sig.website) contactLines.push({ icon: contactIcon('domain', accent, contactIconStyle), content: <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a> });
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
-  if (addr) contactLines.push({ icon: contactIcon('marker', accent), content: <span style={{ color: textColor }}>{addr}</span> });
+  if (addr && showAddress) contactLines.push({ icon: contactIcon('marker', accent, contactIconStyle), content: <span style={{ color: textColor }}>{addr}</span> });
 
   const contactBlock = contactLines.length > 0 && (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: spacing }}>
       {contactLines.map((cl, i) => (
-        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} />
+        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} showIcon={showContactIcons} />
       ))}
     </div>
+  );
+
+  // Company line
+  const companyLine = sig.company && showCompany && (
+    <p style={{
+      margin: `2px 0 0 13px`,
+      fontSize: companySize,
+      color: companyColor,
+      fontWeight: companyBold ? 'bold' : 'normal',
+      lineHeight: `${companySize + 5}px`,
+    }}>
+      {sig.company}
+    </p>
   );
 
   // Name + job title on one line, behind a thin accent rule
@@ -103,25 +127,30 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     </div>
   );
 
-  const socialRow = socials.length > 0 && (
-    <div style={{ marginTop: 6, display: 'flex', gap: 4 }}>
+  const socialRow = showSocials && socials.length > 0 && (
+    <div style={{ marginTop: spacing, display: 'flex', gap: 4 }}>
       {socials.map(s => (
         <a key={s.label} href={s.url} target="_blank" rel="noreferrer">
-          <img src={s.src} alt={s.label} width={24} height={24} style={{ borderRadius: round ? '50%' : 0 }} />
+          <img src={s.src} alt={s.label} width={socialIconSize} height={socialIconSize} style={{ borderRadius: round ? '50%' : 0 }} />
         </a>
       ))}
     </div>
   );
 
+  const taglineLine = showTagline && sig.tagline && (
+    <p style={{ marginTop: spacing, fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' as const }}>{sig.tagline}</p>
+  );
+
   if (layout === 'Stacked') {
     return (
       <div style={{ fontFamily: `${bodyFont}, sans-serif`, maxWidth: 600 }}>
-        {logoUrl && <img src={logoUrl} width={logoSize} height={logoSize} alt="Logo" style={{ marginBottom: 10 }} />}
+        {logoUrl && <img src={logoUrl} width={logoSize} height={logoSize} alt="Logo" style={{ marginBottom: spacing + 2 }} />}
         {nameLine}
-        {divider && <hr style={{ border: 0, borderTop: '1px solid #ddd', margin: '8px 0' }} />}
+        {companyLine}
+        {divider && <hr style={{ border: 0, borderTop: '1px solid #ddd', margin: `${spacing}px 0` }} />}
         {contactBlock}
-        {sig.tagline && <p style={{ marginTop: 8, fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
-        {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" style={{ marginTop: 8 }} />}
+        {taglineLine}
+        {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" style={{ marginTop: spacing }} />}
         {socialRow}
       </div>
     );
@@ -135,6 +164,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
         <div>
           <span style={{ fontFamily: `${headingFont}, sans-serif`, fontSize, fontWeight: 'bold', color: accent }}>{sig.fullName}</span>
           {sig.jobTitle && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.jobTitle}</span>}
+          {sig.company && showCompany && <span style={{ fontSize: fontSize - 2, color: companyColor }}> | {sig.company}</span>}
           {sig.emailAddress && <span style={{ fontSize: fontSize - 2 }}> | <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a></span>}
           {sig.phone && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.phone}</span>}
           {sig.website && <span style={{ fontSize: fontSize - 2 }}> | <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a></span>}
@@ -143,7 +173,17 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     );
   }
 
-  // Logo Left (default)
+  // Logo Left (default) — social position is configurable
+  const rightColumnContent = (
+    <div style={{ paddingLeft: 20, textAlign: 'center' as const, flexShrink: 0, maxWidth: 200 }}>
+      {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" />}
+      {taglineLine}
+      {socialPosition === 'right_column' && socialRow}
+    </div>
+  );
+
+  const hasRightContent = bannerUrl || (showTagline && sig.tagline) || socialPosition === 'right_column';
+
   return (
     <div style={{ fontFamily: `${bodyFont}, sans-serif`, display: 'flex', gap: 0, maxWidth: 600 }}>
       {logoUrl && (
@@ -154,13 +194,12 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
       {divider && <div style={{ width: 1, background: '#ddd', marginRight: 16, flexShrink: 0 }} />}
       <div style={{ flexGrow: 1 }}>
         {nameLine}
+        {companyLine}
         {contactBlock}
+        {socialPosition === 'under_details' && socialRow}
       </div>
-      <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0, maxWidth: 200 }}>
-        {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" />}
-        {sig.tagline && <p style={{ margin: '6px 0 0', fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
-        {socialRow}
-      </div>
+      {hasRightContent && rightColumnContent}
+      {socialPosition === 'under_banner' && !hasRightContent && socialRow}
     </div>
   );
 }

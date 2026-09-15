@@ -25,6 +25,20 @@ export default createEndpoint({
     const bannerUrl = s.bannerImage?.[0]?.url || '';
     const divider = s.showDivider !== false;
     const round = s.roundSocialIcons !== false;
+    const spacing = (s as any).blockSpacing ?? 8;
+
+    // New customization
+    const companySize = (s as any).companySize || 13;
+    const companyColor = (s as any).companyColor || textColor;
+    const companyBold = (s as any).companyBold ?? false;
+    const socialPosition = (s as any).socialPosition || 'under_details';
+    const socialIconSize = (s as any).socialIconSize || 24;
+    const contactIconStyle = (s as any).contactIconStyle || 'filled';
+    const showCompany = (s as any).showCompany !== false;
+    const showTagline = (s as any).showTagline !== false;
+    const showAddress = (s as any).showAddress !== false;
+    const showSocials = (s as any).showSocials !== false;
+    const showContactIcons = contactIconStyle !== 'none';
 
     const socials: { url: string; icon: string; label: string }[] = [];
     if (s.linkedInUrl) socials.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
@@ -34,27 +48,34 @@ export default createEndpoint({
     if (s.xUrl) socials.push({ url: s.xUrl, icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968830.png', label: 'X' });
     if (s.tikTokUrl) socials.push({ url: s.tikTokUrl, icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' });
 
-    const socialHtml = socials.map(sc =>
-      `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="24" height="24" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
-    ).join('');
+    const socialHtml = showSocials ? socials.map(sc =>
+      `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="${socialIconSize}" height="${socialIconSize}" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
+    ).join('') : '';
 
     const iconPx = Math.round(fontSize * 0.95);
-    const iconUrl = (name: string) => `https://img.icons8.com/ios-filled/50/${accent.replace('#', '')}/${name}.png`;
+    const iconStylePath = contactIconStyle === 'outlined' ? 'ios' : 'ios-filled';
+    const iconUrl = (name: string) => `https://img.icons8.com/${iconStylePath}/50/${accent.replace('#', '')}/${name}.png`;
     const rawSite = (s.website || '').trim();
     const siteHref = /^https?:\/\//i.test(rawSite) ? rawSite : `https://${rawSite}`;
     const siteLabel = rawSite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
 
     const contactRows: string[] = [];
     function addRow(iconName: string, content: string) {
-      contactRows.push(
-        `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
-      );
+      if (showContactIcons) {
+        contactRows.push(
+          `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
+        );
+      } else {
+        contactRows.push(
+          `<tr><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:2px 0;">${content}</td></tr>`
+        );
+      }
     }
     if (s.emailAddress) addRow('new-post', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
     if (s.phone) addRow('phone', `<span style="color:${textColor};">${s.phone}</span>`);
     if (s.website) addRow('domain', `<a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a>`);
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
-    if (addressParts) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
+    if (addressParts && showAddress) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
 
     const contactTable = contactRows.length > 0
       ? `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`
@@ -69,19 +90,30 @@ export default createEndpoint({
       </td>
     </tr></table>`;
 
+    const companyLine = s.company && showCompany
+      ? `<p style="margin:2px 0 0 13px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};line-height:${companySize + 5}px;">${s.company}</p>`
+      : '';
+
+    const taglineHtml = showTagline && s.tagline
+      ? `<p style="margin:${spacing}px 0 0;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</p>`
+      : '';
+
+    const socialBlock = socialHtml ? `<div style="margin-top:${spacing}px;">${socialHtml}</div>` : '';
+
     if (layout === 'Stacked') {
       const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
-  <tr><td style="padding-bottom:12px;">
+  <tr><td style="padding-bottom:${spacing + 4}px;">
     ${logoUrl ? `<img src="${logoUrl}" width="${logoSize}" height="${logoSize}" style="border:0;display:block;" alt="Logo" />` : ''}
   </td></tr>
   <tr><td>
     ${nameLine}
+    ${companyLine}
   </td></tr>
-  ${divider ? `<tr><td style="padding:8px 0;"><hr style="border:0;border-top:1px solid #ddd;margin:0;" /></td></tr>` : ''}
+  ${divider ? `<tr><td style="padding:${spacing}px 0;"><hr style="border:0;border-top:1px solid #ddd;margin:0;" /></td></tr>` : ''}
   <tr><td style="padding-top:4px;">${contactTable}</td></tr>
-  ${s.tagline ? `<tr><td style="padding-top:8px;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</td></tr>` : ''}
-  ${bannerUrl ? `<tr><td style="padding-top:8px;"><img src="${bannerUrl}" width="${bannerSize}" style="border:0;" alt="Banner" /></td></tr>` : ''}
-  ${socialHtml ? `<tr><td style="padding-top:8px;">${socialHtml}</td></tr>` : ''}
+  ${taglineHtml ? `<tr><td>${taglineHtml}</td></tr>` : ''}
+  ${bannerUrl ? `<tr><td style="padding-top:${spacing}px;"><img src="${bannerUrl}" width="${bannerSize}" style="border:0;" alt="Banner" /></td></tr>` : ''}
+  ${socialBlock ? `<tr><td>${socialBlock}</td></tr>` : ''}
 </table>`;
       return { html };
     }
@@ -96,6 +128,7 @@ export default createEndpoint({
     <td style="vertical-align:middle;">
       <span style="font-family:${headingFont},sans-serif;font-size:${fontSize}px;font-weight:bold;color:${accent};">${s.fullName || ''}</span>
       ${s.jobTitle ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.jobTitle}</span>` : ''}
+      ${s.company && showCompany ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">| ${s.company}</span>` : ''}
       ${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}
       ${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}
       ${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}
@@ -105,7 +138,11 @@ export default createEndpoint({
       return { html };
     }
 
-    // Default: Logo Left
+    // Default: Logo Left — social position is configurable
+    const socialsInMain = socialPosition === 'under_details' ? socialBlock : '';
+    const socialsInRight = socialPosition === 'right_column' ? socialBlock : '';
+    const hasBannerColumn = bannerUrl || taglineHtml || socialsInRight;
+
     const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
   <tr>
     <td style="vertical-align:top;padding-right:16px;">
@@ -114,13 +151,15 @@ export default createEndpoint({
     ${divider ? `<td style="vertical-align:top;padding-right:16px;"><div style="width:1px;min-height:80px;background:#ddd;"></div></td>` : ''}
     <td style="vertical-align:top;">
       ${nameLine}
-      <div style="margin-top:8px;">${contactTable}</div>
+      ${companyLine}
+      <div style="margin-top:${spacing}px;">${contactTable}</div>
+      ${socialsInMain}
     </td>
-    <td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
+    ${hasBannerColumn ? `<td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
       ${bannerUrl ? `<img src="${bannerUrl}" width="${bannerSize}" style="border:0;display:block;" alt="Banner" />` : ''}
-      ${s.tagline ? `<p style="margin:6px 0 0;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</p>` : ''}
-      ${socialHtml ? `<div style="margin-top:6px;">${socialHtml}</div>` : ''}
-    </td>
+      ${taglineHtml}
+      ${socialsInRight}
+    </td>` : ''}
   </tr>
 </table>`;
     return { html };
