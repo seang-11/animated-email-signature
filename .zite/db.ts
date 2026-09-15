@@ -119,6 +119,8 @@ export type EmailSignaturesRecordType = {
   roundSocialIcons?: boolean;
   /** Read-only. "Last Updated". Auto-set when record was last modified (ISO 8601) */
   lastUpdated?: string;
+  /** "Banner Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  bannerSize?: number;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -150,6 +152,7 @@ export type EmailSignaturesRecordInput = {
   baseTextSize: string | number | null;
   showDivider: string | boolean | null;
   roundSocialIcons: string | boolean | null;
+  bannerSize: string | number | null;
 };
 
 export interface NotificationLink {

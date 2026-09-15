@@ -287,6 +287,18 @@
               "displayTimeZone": false
             }
           }
+        },
+        {
+          "id": "fhzw4xC1oZr",
+          "sdkName": "bannerSize",
+          "definition": {
+            "name": "Banner Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
         }
       ]
     }

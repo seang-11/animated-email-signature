@@ -16,6 +16,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const bodyFont = sig.bodyFont || 'Arial';
   const logoSize = sig.logoSize || 96;
   const fontSize = sig.baseTextSize || 14;
+  const bannerSize = sig.bannerSize || 180;
   const logoUrl = sig.logo?.[0]?.url;
   const bannerUrl = sig.bannerImage?.[0]?.url;
   const divider = sig.showDivider !== false;
@@ -53,7 +54,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
           {contactLines.map((el, i) => <div key={i}>{el}</div>)}
         </div>
         {sig.tagline && <p style={{ marginTop: 8, fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
-        {bannerUrl && <img src={bannerUrl} width={200} alt="Banner" style={{ marginTop: 8 }} />}
+        {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" style={{ marginTop: 8 }} />}
         {socialRow}
       </div>
     );
@@ -90,7 +91,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
         </div>
       </div>
       <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0, maxWidth: 200 }}>
-        {bannerUrl && <img src={bannerUrl} width={180} alt="Banner" />}
+        {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" />}
         {sig.tagline && <p style={{ margin: '6px 0 0', fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
         {socialRow}
       </div>

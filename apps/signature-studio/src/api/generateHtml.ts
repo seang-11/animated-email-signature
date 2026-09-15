@@ -18,6 +18,7 @@ export default createEndpoint({
     const bodyFont = s.bodyFont || 'Arial';
     const logoSize = s.logoSize || 96;
     const fontSize = s.baseTextSize || 14;
+    const bannerSize = s.bannerSize || 180;
     const logoUrl = s.logo?.[0]?.url || '';
     const bannerUrl = s.bannerImage?.[0]?.url || '';
     const divider = s.showDivider !== false;
@@ -55,7 +56,7 @@ export default createEndpoint({
   ${divider ? `<tr><td style="padding:8px 0;"><hr style="border:0;border-top:1px solid #ddd;margin:0;" /></td></tr>` : ''}
   <tr><td style="line-height:1.6;">${contactLines.join('<br/>')}</td></tr>
   ${s.tagline ? `<tr><td style="padding-top:8px;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</td></tr>` : ''}
-  ${bannerUrl ? `<tr><td style="padding-top:8px;"><img src="${bannerUrl}" width="200" style="border:0;" alt="Banner" /></td></tr>` : ''}
+  ${bannerUrl ? `<tr><td style="padding-top:8px;"><img src="${bannerUrl}" width="${bannerSize}" style="border:0;" alt="Banner" /></td></tr>` : ''}
   ${socialHtml ? `<tr><td style="padding-top:8px;">${socialHtml}</td></tr>` : ''}
 </table>`;
       return { html };
@@ -92,7 +93,7 @@ export default createEndpoint({
       <p style="margin:8px 0 0;line-height:1.6;">${contactLines.join('<br/>')}</p>
     </td>
     <td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
-      ${bannerUrl ? `<img src="${bannerUrl}" width="180" style="border:0;display:block;" alt="Banner" />` : ''}
+      ${bannerUrl ? `<img src="${bannerUrl}" width="${bannerSize}" style="border:0;display:block;" alt="Banner" />` : ''}
       ${s.tagline ? `<p style="margin:6px 0 0;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</p>` : ''}
       ${socialHtml ? `<div style="margin-top:6px;">${socialHtml}</div>` : ''}
     </td>

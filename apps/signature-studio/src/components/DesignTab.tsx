@@ -128,6 +128,17 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
           </div>
           <div>
             <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Banner size</span><span>{sig.bannerSize || 180} px</span>
+            </div>
+            <Slider
+              value={[sig.bannerSize || 180]}
+              onValueChange={([v]) => updateField('bannerSize', v)}
+              min={100} max={400} step={10}
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>Base text size</span><span>{sig.baseTextSize || 14} px</span>
             </div>
             <Slider
