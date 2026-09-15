@@ -89,7 +89,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
           {contactLines.map((el, i) => <div key={i}>{el}</div>)}
         </div>
       </div>
-      <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0 }}>
+      <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0, maxWidth: 200 }}>
         {bannerUrl && <img src={bannerUrl} width={180} alt="Banner" />}
         {sig.tagline && <p style={{ margin: '6px 0 0', fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
         {socialRow}

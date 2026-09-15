@@ -91,7 +91,7 @@ export default createEndpoint({
       ${s.jobTitle ? `<p style="margin:2px 0 0;font-size:${fontSize}px;color:${textColor};">${s.jobTitle}</p>` : ''}
       <p style="margin:8px 0 0;line-height:1.6;">${contactLines.join('<br/>')}</p>
     </td>
-    <td style="vertical-align:top;padding-left:20px;text-align:center;">
+    <td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
       ${bannerUrl ? `<img src="${bannerUrl}" width="180" style="border:0;display:block;" alt="Banner" />` : ''}
       ${s.tagline ? `<p style="margin:6px 0 0;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</p>` : ''}
       ${socialHtml ? `<div style="margin-top:6px;">${socialHtml}</div>` : ''}

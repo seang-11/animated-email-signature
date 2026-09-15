@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Input } from '@project/components/ui/input';
 import { Label } from '@project/components/ui/label';
-import { Upload, Image as ImageIcon } from 'lucide-react';
+import { Upload, Image as ImageIcon, X } from 'lucide-react';
 import { useUpload } from 'zitejs/upload';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
@@ -31,14 +31,28 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
     }
   };
 
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateField(field, null);
+    toast.success(`${label} removed`);
+  };
+
   return (
     <div
-      className="cursor-pointer rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-primary/50"
+      className="relative cursor-pointer rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-primary/50"
       onClick={() => inputRef.current?.click()}
     >
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={isUploading} />
       {currentUrl ? (
-        <img src={currentUrl} alt={label} className="mx-auto h-20 max-w-full object-contain" />
+        <>
+          <img src={currentUrl} alt={label} className="mx-auto h-20 max-w-full object-contain" />
+          <button
+            onClick={handleRemove}
+            className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/80"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </>
       ) : (
         <div className="flex h-20 items-center justify-center">
           <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
