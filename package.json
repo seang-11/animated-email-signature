@@ -1,0 +1,11 @@
+{
+  "name": "animated-email-signature",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "zitejs": "0.9.115"
+  }
+}
