@@ -36,19 +36,23 @@ export default createEndpoint({
       `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="24" height="24" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
     ).join('');
 
-    // Build contact rows as a nested table for email-client reliability
+    // Build contact rows as a nested table for email-client reliability.
+    // Icons8 serves PNGs tinted to any hex via the URL path, so icons follow
+    // the accent color and render identically in every client (unlike emoji).
     // Order: email, phone, website, address
+    const iconPx = Math.round(fontSize * 0.95);
+    const iconUrl = (name: string) => `https://img.icons8.com/ios-filled/50/${accent.replace('#', '')}/${name}.png`;
     const contactRows: string[] = [];
-    function addRow(icon: string, content: string) {
+    function addRow(iconName: string, content: string) {
       contactRows.push(
-        `<tr><td style="width:20px;vertical-align:top;padding:1px 6px 1px 0;font-size:${fontSize}px;">${icon}</td><td style="vertical-align:top;font-size:${fontSize}px;padding:1px 0;">${content}</td></tr>`
+        `<tr><td style="vertical-align:top;padding:3px 7px 3px 0;line-height:0;"><img src="${iconUrl(iconName)}" width="${iconPx}" height="${iconPx}" alt="" style="border:0;display:block;" /></td><td style="vertical-align:top;font-size:${fontSize}px;line-height:${fontSize + 6}px;padding:1px 0;">${content}</td></tr>`
       );
     }
-    if (s.emailAddress) addRow('&#9993;', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
-    if (s.phone) addRow('&#9742;', `<span style="color:${textColor};">${s.phone}</span>`);
-    if (s.website) addRow('&#127760;', `<a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a>`);
+    if (s.emailAddress) addRow('email', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
+    if (s.phone) addRow('phone', `<span style="color:${textColor};">${s.phone}</span>`);
+    if (s.website) addRow('domain', `<a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a>`);
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
-    if (addressParts) addRow('&#128205;', `<span style="color:${textColor};">${addressParts}</span>`);
+    if (addressParts) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
 
     const contactTable = contactRows.length > 0
       ? `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`

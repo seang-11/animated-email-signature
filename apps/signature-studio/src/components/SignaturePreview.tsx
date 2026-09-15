@@ -11,10 +11,24 @@ const SOCIAL_ICONS: Record<string, { src: string; label: string }> = {
 
 type ContactLine = { icon: string; content: JSX.Element };
 
+/** Icons8 serves PNGs tinted to any hex color via the URL path, so contact
+ *  icons re-tint automatically when the accent color changes, and render
+ *  identically on every device (unlike emoji glyphs). */
+function contactIcon(name: string, hex: string) {
+  return `https://img.icons8.com/ios-filled/50/${hex.replace('#', '')}/${name}.png`;
+}
+
 function ContactRow({ icon, content, fontSize }: { icon: string; content: JSX.Element; fontSize: number }) {
+  const iconPx = Math.round(fontSize * 0.95);
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
-      <span style={{ fontSize, width: 18, flexShrink: 0, textAlign: 'center', lineHeight: `${fontSize + 6}px` }}>{icon}</span>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 3 }}>
+      <img
+        src={icon}
+        alt=""
+        width={iconPx}
+        height={iconPx}
+        style={{ flexShrink: 0, marginTop: Math.round(fontSize * 0.25), display: 'block' }}
+      />
       <span style={{ fontSize, lineHeight: `${fontSize + 6}px` }}>{content}</span>
     </div>
   );
@@ -40,11 +54,11 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
 
   // Build contact lines: email, phone, website, address
   const contactLines: ContactLine[] = [];
-  if (sig.emailAddress) contactLines.push({ icon: '✉', content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
-  if (sig.phone) contactLines.push({ icon: '☎', content: <span style={{ color: textColor }}>{sig.phone}</span> });
-  if (sig.website) contactLines.push({ icon: '🌐', content: <a href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>{sig.website}</a> });
+  if (sig.emailAddress) contactLines.push({ icon: contactIcon('email', accent), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
+  if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent), content: <span style={{ color: textColor }}>{sig.phone}</span> });
+  if (sig.website) contactLines.push({ icon: contactIcon('domain', accent), content: <a href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>{sig.website}</a> });
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
-  if (addr) contactLines.push({ icon: '📍', content: <span style={{ color: textColor }}>{addr}</span> });
+  if (addr) contactLines.push({ icon: contactIcon('marker', accent), content: <span style={{ color: textColor }}>{addr}</span> });
 
   const contactBlock = contactLines.length > 0 && (
     <div style={{ marginTop: 8 }}>
