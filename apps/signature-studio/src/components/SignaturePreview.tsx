@@ -9,6 +9,17 @@ const SOCIAL_ICONS: Record<string, { src: string; label: string }> = {
   tikTokUrl: { src: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' },
 };
 
+type ContactLine = { icon: string; content: JSX.Element };
+
+function ContactRow({ icon, content, fontSize }: { icon: string; content: JSX.Element; fontSize: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
+      <span style={{ fontSize, width: 18, flexShrink: 0, textAlign: 'center', lineHeight: `${fontSize + 6}px` }}>{icon}</span>
+      <span style={{ fontSize, lineHeight: `${fontSize + 6}px` }}>{content}</span>
+    </div>
+  );
+}
+
 export default function SignaturePreview({ sig }: { sig: SigData }) {
   const accent = sig.accentColor || '#111111';
   const textColor = sig.textColor || '#333333';
@@ -27,11 +38,21 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     .filter(([key]) => sig[key])
     .map(([key, v]) => ({ url: sig[key], ...v }));
 
-  const contactLines: JSX.Element[] = [];
-  if (sig.phone) contactLines.push(<span key="phone">☎ {sig.phone}</span>);
-  if (sig.website) contactLines.push(<a key="web" href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>🌐 {sig.website}</a>);
+  // Build contact lines: email, phone, website, address
+  const contactLines: ContactLine[] = [];
+  if (sig.emailAddress) contactLines.push({ icon: '✉', content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
+  if (sig.phone) contactLines.push({ icon: '☎', content: <span style={{ color: textColor }}>{sig.phone}</span> });
+  if (sig.website) contactLines.push({ icon: '🌐', content: <a href={`https://${sig.website}`} style={{ color: accent, textDecoration: 'none' }}>{sig.website}</a> });
   const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
-  if (addr) contactLines.push(<span key="addr">📍 {addr}</span>);
+  if (addr) contactLines.push({ icon: '📍', content: <span style={{ color: textColor }}>{addr}</span> });
+
+  const contactBlock = contactLines.length > 0 && (
+    <div style={{ marginTop: 8 }}>
+      {contactLines.map((cl, i) => (
+        <ContactRow key={i} icon={cl.icon} content={cl.content} fontSize={fontSize} />
+      ))}
+    </div>
+  );
 
   const socialRow = socials.length > 0 && (
     <div style={{ marginTop: 6, display: 'flex', gap: 4 }}>
@@ -50,9 +71,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
         <p style={{ margin: 0, fontFamily: `${headingFont}, sans-serif`, fontSize: fontSize + 4, fontWeight: 'bold', color: accent }}>{sig.fullName}</p>
         {sig.jobTitle && <p style={{ margin: '2px 0 0', fontSize, color: textColor }}>{sig.jobTitle}</p>}
         {divider && <hr style={{ border: 0, borderTop: '1px solid #ddd', margin: '8px 0' }} />}
-        <div style={{ lineHeight: 1.6, fontSize }}>
-          {contactLines.map((el, i) => <div key={i}>{el}</div>)}
-        </div>
+        {contactBlock}
         {sig.tagline && <p style={{ marginTop: 8, fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
         {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" style={{ marginTop: 8 }} />}
         {socialRow}
@@ -68,6 +87,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
         <div>
           <span style={{ fontFamily: `${headingFont}, sans-serif`, fontSize, fontWeight: 'bold', color: accent }}>{sig.fullName}</span>
           {sig.jobTitle && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.jobTitle}</span>}
+          {sig.emailAddress && <span style={{ fontSize: fontSize - 2 }}> | <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a></span>}
           {sig.phone && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.phone}</span>}
         </div>
       </div>
@@ -86,9 +106,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
       <div style={{ flexGrow: 1 }}>
         <p style={{ margin: 0, fontFamily: `${headingFont}, sans-serif`, fontSize: fontSize + 4, fontWeight: 'bold', color: accent }}>{sig.fullName}</p>
         {sig.jobTitle && <p style={{ margin: '2px 0 0', fontSize, color: textColor }}>{sig.jobTitle}</p>}
-        <div style={{ marginTop: 8, lineHeight: 1.6, fontSize }}>
-          {contactLines.map((el, i) => <div key={i}>{el}</div>)}
-        </div>
+        {contactBlock}
       </div>
       <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0, maxWidth: 200 }}>
         {bannerUrl && <img src={bannerUrl} width={bannerSize} alt="Banner" />}

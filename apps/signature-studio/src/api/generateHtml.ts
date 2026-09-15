@@ -36,11 +36,23 @@ export default createEndpoint({
       `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="24" height="24" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
     ).join('');
 
-    const contactLines: string[] = [];
-    if (s.phone) contactLines.push(`<span style="font-size:${fontSize}px;color:${textColor};">&#9742; ${s.phone}</span>`);
-    if (s.website) contactLines.push(`<a href="https://${s.website}" style="font-size:${fontSize}px;color:${accent};text-decoration:none;">&#127760; ${s.website}</a>`);
+    // Build contact rows as a nested table for email-client reliability
+    // Order: email, phone, website, address
+    const contactRows: string[] = [];
+    function addRow(icon: string, content: string) {
+      contactRows.push(
+        `<tr><td style="width:20px;vertical-align:top;padding:1px 6px 1px 0;font-size:${fontSize}px;">${icon}</td><td style="vertical-align:top;font-size:${fontSize}px;padding:1px 0;">${content}</td></tr>`
+      );
+    }
+    if (s.emailAddress) addRow('&#9993;', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
+    if (s.phone) addRow('&#9742;', `<span style="color:${textColor};">${s.phone}</span>`);
+    if (s.website) addRow('&#127760;', `<a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a>`);
     const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
-    if (addressParts) contactLines.push(`<span style="font-size:${fontSize}px;color:${textColor};">&#128205; ${addressParts}</span>`);
+    if (addressParts) addRow('&#128205;', `<span style="color:${textColor};">${addressParts}</span>`);
+
+    const contactTable = contactRows.length > 0
+      ? `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`
+      : '';
 
     const layout = s.layout || 'Logo Left';
 
@@ -54,7 +66,7 @@ export default createEndpoint({
     ${s.jobTitle ? `<p style="margin:2px 0 0;font-size:${fontSize}px;color:${textColor};">${s.jobTitle}</p>` : ''}
   </td></tr>
   ${divider ? `<tr><td style="padding:8px 0;"><hr style="border:0;border-top:1px solid #ddd;margin:0;" /></td></tr>` : ''}
-  <tr><td style="line-height:1.6;">${contactLines.join('<br/>')}</td></tr>
+  <tr><td style="padding-top:4px;">${contactTable}</td></tr>
   ${s.tagline ? `<tr><td style="padding-top:8px;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</td></tr>` : ''}
   ${bannerUrl ? `<tr><td style="padding-top:8px;"><img src="${bannerUrl}" width="${bannerSize}" style="border:0;" alt="Banner" /></td></tr>` : ''}
   ${socialHtml ? `<tr><td style="padding-top:8px;">${socialHtml}</td></tr>` : ''}
@@ -72,6 +84,7 @@ export default createEndpoint({
     <td style="vertical-align:middle;">
       <span style="font-family:${headingFont},sans-serif;font-size:${fontSize}px;font-weight:bold;color:${accent};">${s.fullName || ''}</span>
       ${s.jobTitle ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.jobTitle}</span>` : ''}
+      ${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}
       ${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}
       ${s.website ? ` <span style="font-size:${fontSize - 2}px;"><a href="https://${s.website}" style="color:${accent};text-decoration:none;">${s.website}</a></span>` : ''}
     </td>
@@ -90,7 +103,7 @@ export default createEndpoint({
     <td style="vertical-align:top;">
       <p style="margin:0;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;font-weight:bold;color:${accent};">${s.fullName || ''}</p>
       ${s.jobTitle ? `<p style="margin:2px 0 0;font-size:${fontSize}px;color:${textColor};">${s.jobTitle}</p>` : ''}
-      <p style="margin:8px 0 0;line-height:1.6;">${contactLines.join('<br/>')}</p>
+      <div style="margin-top:8px;">${contactTable}</div>
     </td>
     <td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
       ${bannerUrl ? `<img src="${bannerUrl}" width="${bannerSize}" style="border:0;display:block;" alt="Banner" />` : ''}

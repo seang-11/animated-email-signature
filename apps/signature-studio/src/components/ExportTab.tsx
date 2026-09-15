@@ -1,14 +1,29 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { generateHtml } from 'zitejs/api';
 import { Button } from '@project/components/ui/button';
-import { Copy, Code2, Download } from 'lucide-react';
+import { Copy, Code2, Download, Mail, Monitor, Apple } from 'lucide-react';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
+
+function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+          <Icon className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 const CLIENTS = [
   {
     key: 'gmail',
     label: 'Gmail',
+    icon: Mail,
     steps: [
       'Open Gmail → Settings (gear icon) → See all settings',
       'Go to the General tab, scroll down to Signature',
@@ -20,6 +35,7 @@ const CLIENTS = [
   {
     key: 'outlook',
     label: 'Outlook',
+    icon: Monitor,
     steps: [
       'Open Outlook → Settings → View all Outlook settings',
       'Go to Mail → Compose and reply',
@@ -31,6 +47,7 @@ const CLIENTS = [
   {
     key: 'apple',
     label: 'Apple Mail',
+    icon: Apple,
     steps: [
       'Open Mail → Settings → Signatures',
       'Click the + button to create a new signature',
@@ -44,7 +61,6 @@ export default function ExportTab({ sig }: { sig: SigData }) {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [client, setClient] = useState('gmail');
-  const previewRef = useRef<HTMLDivElement>(null);
 
   const fetchHtml = async () => {
     if (html) return html;
@@ -73,7 +89,6 @@ export default function ExportTab({ sig }: { sig: SigData }) {
       ]);
       toast.success('Signature copied — paste it into your email client');
     } catch {
-      // fallback
       await navigator.clipboard.writeText(h);
       toast.success('HTML copied to clipboard');
     }
@@ -102,11 +117,10 @@ export default function ExportTab({ sig }: { sig: SigData }) {
   const selected = CLIENTS.find(c => c.key === client) || CLIENTS[0];
 
   return (
-    <div className="space-y-6">
-      <section>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Export Actions</p>
+    <div className="space-y-5">
+      <SectionCard icon={Copy} title="Export Actions">
         <div className="flex flex-wrap gap-3">
-          <Button onClick={copyRich} disabled={loading} className="gap-2">
+          <Button onClick={copyRich} disabled={loading} className="gap-2 shadow-sm">
             <Copy className="h-4 w-4" /> Copy signature
           </Button>
           <Button variant="outline" onClick={copyHtml} disabled={loading} className="gap-2">
@@ -116,28 +130,26 @@ export default function ExportTab({ sig }: { sig: SigData }) {
             <Download className="h-4 w-4" /> Download .html
           </Button>
         </div>
-      </section>
+      </SectionCard>
 
       {html && (
-        <section>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">HTML Source</p>
-          <div className="max-h-48 overflow-auto rounded-lg border border-border bg-muted p-4">
+        <SectionCard icon={Code2} title="HTML Source">
+          <div className="max-h-48 overflow-auto rounded-lg border border-border bg-muted/50 p-4">
             <pre className="whitespace-pre-wrap font-mono text-xs text-muted-foreground">{html}</pre>
           </div>
-        </section>
+        </SectionCard>
       )}
 
-      <section>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Setup Instructions</p>
-        <div className="flex gap-2 mb-4">
+      <SectionCard icon={Mail} title="Setup Instructions">
+        <div className="mb-4 inline-flex rounded-lg bg-muted p-1">
           {CLIENTS.map(c => (
             <button
               key={c.key}
               onClick={() => setClient(c.key)}
-              className={`rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
                 client === c.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border text-muted-foreground hover:text-foreground'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {c.label}
@@ -147,12 +159,12 @@ export default function ExportTab({ sig }: { sig: SigData }) {
         <ol className="space-y-2">
           {selected.steps.map((step, i) => (
             <li key={i} className="flex gap-3 text-sm text-muted-foreground">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">{i + 1}</span>
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">{i + 1}</span>
               {step}
             </li>
           ))}
         </ol>
-      </section>
+      </SectionCard>
     </div>
   );
 }

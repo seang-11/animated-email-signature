@@ -1,10 +1,24 @@
 import { useRef } from 'react';
 import { Input } from '@project/components/ui/input';
 import { Label } from '@project/components/ui/label';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, User, ImagePlus, Share2 } from 'lucide-react';
 import { useUpload } from 'zitejs/upload';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
+
+function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+          <Icon className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function Field({ label, value, field, updateField }: { label: string; value: string; field: string; updateField: (k: string, v: any) => void }) {
   return (
@@ -39,7 +53,7 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
 
   return (
     <div
-      className="relative cursor-pointer rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-primary/50"
+      className="relative cursor-pointer rounded-lg border-2 border-dashed border-border bg-muted/30 p-4 text-center transition-all hover:border-primary/50 hover:bg-muted/50"
       onClick={() => inputRef.current?.click()}
     >
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={isUploading} />
@@ -48,14 +62,14 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
           <img src={currentUrl} alt={label} className="mx-auto h-20 max-w-full object-contain" />
           <button
             onClick={handleRemove}
-            className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/80"
+            className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm transition-transform hover:scale-110 hover:bg-destructive/80"
           >
             <X className="h-3 w-3" />
           </button>
         </>
       ) : (
         <div className="flex h-20 items-center justify-center">
-          <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+          <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
         </div>
       )}
       <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
@@ -77,9 +91,8 @@ const SOCIAL_FIELDS = [
 
 export default function ContentTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
-    <div className="space-y-6">
-      <section>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Identity</p>
+    <div className="space-y-5">
+      <SectionCard icon={User} title="Identity">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Full name" value={sig.fullName} field="fullName" updateField={updateField} />
           <Field label="Job title" value={sig.jobTitle} field="jobTitle" updateField={updateField} />
@@ -93,18 +106,16 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
             <Field label="Address line 2" value={sig.addressLine2} field="addressLine2" updateField={updateField} />
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Artwork</p>
+      <SectionCard icon={ImagePlus} title="Artwork">
         <div className="grid grid-cols-2 gap-3">
           <ImageUploader label="Logo" field="logo" currentUrl={sig.logo?.[0]?.url} updateField={updateField} />
           <ImageUploader label="Banner" field="bannerImage" currentUrl={sig.bannerImage?.[0]?.url} updateField={updateField} />
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Social Links</p>
+      <SectionCard icon={Share2} title="Social Links">
         <div className="space-y-2">
           {SOCIAL_FIELDS.map(s => (
             <div key={s.field}>
@@ -118,7 +129,7 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
             </div>
           ))}
         </div>
-      </section>
+      </SectionCard>
     </div>
   );
 }
