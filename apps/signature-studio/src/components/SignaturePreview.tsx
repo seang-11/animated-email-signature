@@ -68,6 +68,29 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     </div>
   );
 
+  // Name + job title on one line, behind a thin accent rule
+  const nameLine = (
+    <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
+      <div style={{ width: 3, background: accent, flexShrink: 0, borderRadius: 2 }} />
+      <div
+        style={{
+          fontFamily: `${headingFont}, sans-serif`,
+          fontSize: fontSize + 4,
+          lineHeight: `${fontSize + 12}px`,
+          color: accent,
+        }}
+      >
+        <span style={{ fontWeight: 'bold' }}>{sig.fullName}</span>
+        {sig.jobTitle && (
+          <>
+            <span style={{ color: '#c4c4c4', fontWeight: 'normal', padding: '0 7px' }}>|</span>
+            <span style={{ color: textColor, fontWeight: 'normal' }}>{sig.jobTitle}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   const socialRow = socials.length > 0 && (
     <div style={{ marginTop: 6, display: 'flex', gap: 4 }}>
       {socials.map(s => (
@@ -82,8 +105,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     return (
       <div style={{ fontFamily: `${bodyFont}, sans-serif`, maxWidth: 600 }}>
         {logoUrl && <img src={logoUrl} width={logoSize} height={logoSize} alt="Logo" style={{ marginBottom: 10 }} />}
-        <p style={{ margin: 0, fontFamily: `${headingFont}, sans-serif`, fontSize: fontSize + 4, fontWeight: 'bold', color: accent }}>{sig.fullName}</p>
-        {sig.jobTitle && <p style={{ margin: '2px 0 0', fontSize, color: textColor }}>{sig.jobTitle}</p>}
+        {nameLine}
         {divider && <hr style={{ border: 0, borderTop: '1px solid #ddd', margin: '8px 0' }} />}
         {contactBlock}
         {sig.tagline && <p style={{ marginTop: 8, fontSize: fontSize - 2, letterSpacing: 1, color: accent, textTransform: 'uppercase' }}>{sig.tagline}</p>}
@@ -118,8 +140,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
       )}
       {divider && <div style={{ width: 1, background: '#ddd', marginRight: 16, flexShrink: 0 }} />}
       <div style={{ flexGrow: 1 }}>
-        <p style={{ margin: 0, fontFamily: `${headingFont}, sans-serif`, fontSize: fontSize + 4, fontWeight: 'bold', color: accent }}>{sig.fullName}</p>
-        {sig.jobTitle && <p style={{ margin: '2px 0 0', fontSize, color: textColor }}>{sig.jobTitle}</p>}
+        {nameLine}
         {contactBlock}
       </div>
       <div style={{ paddingLeft: 20, textAlign: 'center', flexShrink: 0, maxWidth: 200 }}>

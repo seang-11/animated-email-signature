@@ -60,14 +60,22 @@ export default createEndpoint({
 
     const layout = s.layout || 'Logo Left';
 
+    // Name + job title on one line, behind a thin accent rule.
+    // Table-based so the rule keeps its height in every email client.
+    const nameLine = `<table cellpadding="0" cellspacing="0" border="0"><tr>
+      <td width="3" style="width:3px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
+      <td style="padding-left:10px;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;line-height:${fontSize + 12}px;color:${accent};">
+        <strong>${s.fullName || ''}</strong>${s.jobTitle ? `<span style="color:#c4c4c4;font-weight:normal;padding:0 7px;">|</span><span style="color:${textColor};font-weight:normal;">${s.jobTitle}</span>` : ''}
+      </td>
+    </tr></table>`;
+
     if (layout === 'Stacked') {
       const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
   <tr><td style="padding-bottom:12px;">
     ${logoUrl ? `<img src="${logoUrl}" width="${logoSize}" height="${logoSize}" style="border:0;display:block;" alt="Logo" />` : ''}
   </td></tr>
   <tr><td>
-    <p style="margin:0;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;font-weight:bold;color:${accent};">${s.fullName || ''}</p>
-    ${s.jobTitle ? `<p style="margin:2px 0 0;font-size:${fontSize}px;color:${textColor};">${s.jobTitle}</p>` : ''}
+    ${nameLine}
   </td></tr>
   ${divider ? `<tr><td style="padding:8px 0;"><hr style="border:0;border-top:1px solid #ddd;margin:0;" /></td></tr>` : ''}
   <tr><td style="padding-top:4px;">${contactTable}</td></tr>
@@ -105,8 +113,7 @@ export default createEndpoint({
     </td>
     ${divider ? `<td style="vertical-align:top;padding-right:16px;"><div style="width:1px;min-height:80px;background:#ddd;"></div></td>` : ''}
     <td style="vertical-align:top;">
-      <p style="margin:0;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;font-weight:bold;color:${accent};">${s.fullName || ''}</p>
-      ${s.jobTitle ? `<p style="margin:2px 0 0;font-size:${fontSize}px;color:${textColor};">${s.jobTitle}</p>` : ''}
+      ${nameLine}
       <div style="margin-top:8px;">${contactTable}</div>
     </td>
     <td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
