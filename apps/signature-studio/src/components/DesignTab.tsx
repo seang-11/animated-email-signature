@@ -52,7 +52,7 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
   return (
     <div className="space-y-5">
       <SectionCard icon={LayoutGrid} title="Layout">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {LAYOUTS.map(l => (
             <button
               key={l.value}
@@ -102,7 +102,7 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
       </SectionCard>
 
       <SectionCard icon={Type} title="Typeface">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <Label className="text-xs text-muted-foreground">Heading font</Label>
             <Select value={sig.headingFont || 'Arial'} onValueChange={v => updateField('headingFont', v)}>

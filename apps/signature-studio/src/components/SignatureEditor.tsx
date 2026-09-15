@@ -196,50 +196,34 @@ export default function SignatureEditor() {
 
       {/* Toolbar: tabs + undo/redo */}
       <div className="border-b border-border bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
           <div className="inline-flex rounded-lg bg-muted p-1">
             {tabs.map(t => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:gap-2 sm:px-4 ${
                   tab === t.key
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <t.icon className="h-4 w-4" />
-                {t.label}
+                <span className="hidden sm:inline">{t.label}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={undo}
-              disabled={!canUndo}
-              className="gap-1.5 text-muted-foreground"
-            >
-              <Undo2 className="h-3.5 w-3.5" /> Undo
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
+              <Undo2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Undo</span>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={redo}
-              disabled={!canRedo}
-              className="gap-1.5 text-muted-foreground"
-            >
-              <Redo2 className="h-3.5 w-3.5" /> Redo
+            <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
+              <Redo2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Redo</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmRevert(true)}
-              disabled={!canUndo}
-              className="gap-1.5 text-muted-foreground"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setConfirmRevert(true)} disabled={!canUndo} className="h-8 w-8 text-muted-foreground">
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -247,7 +231,7 @@ export default function SignatureEditor() {
       </div>
 
       {/* Body */}
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div className="transition-opacity duration-200">
             {tab === 'content' && <ContentTab sig={sig} updateField={handleUpdateField} />}
@@ -268,7 +252,7 @@ export default function SignatureEditor() {
                 <div><span className="font-medium text-foreground/60">From:</span> {sig.fullName || 'You'} &lt;{sig.emailAddress || 'you@company.com'}&gt;</div>
                 <div><span className="font-medium text-foreground/60">Subject:</span> <span className="italic text-muted-foreground/60">Your subject here</span></div>
               </div>
-              <div className="bg-white px-5 py-4">
+              <div className="overflow-x-auto bg-white px-5 py-4">
                 <div className="mb-6 space-y-1.5 text-sm text-gray-400">
                   <div className="h-2.5 w-3/4 rounded bg-gray-100" />
                   <div className="h-2.5 w-1/2 rounded bg-gray-100" />
@@ -306,25 +290,27 @@ export default function SignatureEditor() {
 function Header({ justSaved, children }: { justSaved: boolean; children?: React.ReactNode }) {
   return (
     <header className="bg-gradient-to-r from-secondary to-primary">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm">
-            <img src={LOGO_URL} alt="Prospect Automations" className="h-full w-full object-contain" />
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm sm:h-12 sm:w-12">
+              <img src={LOGO_URL} alt="Prospect Automations" className="h-full w-full object-contain" />
+            </div>
+            <div className="leading-tight">
+              <h1 className="text-base font-semibold text-white sm:text-lg">Signature Studio</h1>
+              <p className="hidden text-xs text-white/70 sm:block">by Prospect Automations</p>
+            </div>
           </div>
-          <div className="leading-tight">
-            <h1 className="text-lg font-semibold text-white">Signature Studio</h1>
-            <p className="text-xs text-white/70">by Prospect Automations</p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          {children}
-          <div className={`flex items-center gap-1.5 text-xs transition-all duration-500 ${justSaved ? 'text-white' : 'text-white/40'}`}>
-            {justSaved ? (
-              <><Check className="h-3.5 w-3.5" /> Saved</>
-            ) : (
-              <><CloudOff className="h-3 w-3" /> Auto-saving</>
-            )}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {children}
+            <div className={`hidden items-center gap-1.5 text-xs transition-all duration-500 sm:flex ${justSaved ? 'text-white' : 'text-white/40'}`}>
+              {justSaved ? (
+                <><Check className="h-3.5 w-3.5" /> Saved</>
+              ) : (
+                <><CloudOff className="h-3 w-3" /> Auto-saving</>
+              )}
+            </div>
           </div>
         </div>
       </div>

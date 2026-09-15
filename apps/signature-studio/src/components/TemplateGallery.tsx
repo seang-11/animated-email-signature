@@ -122,7 +122,7 @@ export default function TemplateGallery({ onSelect, onCancel, showCancel }: Temp
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
       <div className="mb-8 text-center">
         <h2 className="text-2xl font-semibold text-foreground">Choose a starting point</h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -130,7 +130,7 @@ export default function TemplateGallery({ onSelect, onCancel, showCancel }: Temp
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {TEMPLATES.map(t => (
           <button
             key={t.key}
