@@ -16,6 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { SigData } from './SignatureEditor';
 import ColorPicker from './ColorPicker';
 import BlockArranger from './BlockArranger';
+import InfoTip from './InfoTip';
+import { FONTS as FONT_DEFS, FONT_GROUPS, fontStack, isPreviewOnly } from '../utils/fonts';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -123,7 +125,39 @@ const LAYOUTS = [
   { value: 'Stacked', label: 'Stacked', desc: 'Vertical' },
   { value: 'Compact', label: 'Compact', desc: 'One-line' },
 ];
-const FONTS = ['Arial', 'Georgia', 'Helvetica', 'Times New Roman', 'Verdana', 'Trebuchet MS', 'Courier New'];
+/* Grouped font dropdown options */
+function FontOptions() {
+  useEffect(() => {
+    for (const f of FONT_DEFS) {
+      if (f.googleImport && !document.querySelector(`link[href="${f.googleImport}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = f.googleImport;
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
+  return (
+    <>
+      {FONT_GROUPS.map(g => {
+        const fonts = FONT_DEFS.filter(f => f.group === g.key);
+        if (!fonts.length) return null;
+        return (
+          <div key={g.key}>
+            <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{g.label}</div>
+            {fonts.map(f => (
+              <SelectItem key={f.name} value={f.name}>
+                <span style={{ fontFamily: f.stack }}>{f.name}</span>
+                {f.googleImport && <span className="ml-1.5 text-[10px] text-muted-foreground/60">⚠ fallback</span>}
+              </SelectItem>
+            ))}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 const SOCIAL_FIELDS = [
   { field: 'linkedInUrl', label: 'LinkedIn' }, { field: 'instagramUrl', label: 'Instagram' },
   { field: 'facebookUrl', label: 'Facebook' }, { field: 'threadsUrl', label: 'Threads' },
@@ -224,7 +258,7 @@ function SectionHeader({ section, sig, filled, justFilled, zoneLabel }: { sectio
       </motion.div>
       <span className="text-sm font-medium">{section.label}</span>
       {zoneLabel && (
-        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground" title="This block is placed in a special zone. Use the Layout panel or drag it in the preview to move it.">
           {zoneLabel}
         </span>
       )}
@@ -355,6 +389,9 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
   // Divider sub-section open state
   const [dividerOpen, setDividerOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
+  const [hasDragged, setHasDragged] = useState(() => {
+    try { return localStorage.getItem('sig-studio-first-drag') === '1'; } catch { return false; }
+  });
 
   return (
     <div className="space-y-4">
@@ -364,6 +401,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className="rounded-xl border border-border bg-card p-5 shadow-sm"
+        data-tour="theme"
       >
         <div className="mb-5 flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -385,27 +423,32 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
             <ColorPicker value={sig.textColor || '#333333'} onChange={v => updateField('textColor', v)} />
           </div>
 
-          {/* Font pickers with self-rendering options */}
+          {/* Font pickers with grouped options */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <Label className="text-xs text-muted-foreground">Heading font</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Heading font</Label>
+                <InfoTip text="Most email clients only show system-installed fonts. Preview-only fonts look great while editing but will fall back to something similar in the actual email." />
+              </div>
               <Select value={sig.headingFont || 'Arial'} onValueChange={v => updateField('headingFont', v)}>
-                <SelectTrigger className="mt-1" style={{ fontFamily: `${sig.headingFont || 'Arial'}, sans-serif` }}>
+                <SelectTrigger className="mt-1" style={{ fontFamily: fontStack(sig.headingFont || 'Arial') }}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {FONTS.map(f => <SelectItem key={f} value={f}><span style={{ fontFamily: `${f}, sans-serif` }}>{f}</span></SelectItem>)}
+                <SelectContent className="max-h-72">
+                  <FontOptions />
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Body font</Label>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Body font</Label>
+              </div>
               <Select value={sig.bodyFont || 'Arial'} onValueChange={v => updateField('bodyFont', v)}>
-                <SelectTrigger className="mt-1" style={{ fontFamily: `${sig.bodyFont || 'Arial'}, sans-serif` }}>
+                <SelectTrigger className="mt-1" style={{ fontFamily: fontStack(sig.bodyFont || 'Arial') }}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {FONTS.map(f => <SelectItem key={f} value={f}><span style={{ fontFamily: `${f}, sans-serif` }}>{f}</span></SelectItem>)}
+                <SelectContent className="max-h-72">
+                  <FontOptions />
                 </SelectContent>
               </Select>
             </div>
@@ -424,6 +467,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
               className="flex w-full items-center justify-between px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <span>Column divider settings</span>
+              <InfoTip text="The vertical line that separates your logo column from the rest of your info. Also controls the separator color between name and title." />
               <motion.div animate={{ rotate: dividerOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
                 <ChevronDown className="h-4 w-4" />
               </motion.div>
@@ -502,7 +546,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
       </motion.div>
 
       {/* ── Block accordion — drag the cards to reorder the signature ── */}
-      <div className="flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground" data-tour="sections">
         <GripVertical className="h-3 w-3" /> Drag a card to move that part of your signature — the preview updates instantly
       </div>
       <DndContext
@@ -515,6 +559,11 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
           const { active, over } = e;
           if (!over || active.id === over.id) return;
           handleZonesChange(moveBlock(zones, active.id as BlockId, over.id as BlockId));
+          if (!hasDragged) {
+            setHasDragged(true);
+            try { localStorage.setItem('sig-studio-first-drag', '1'); } catch {}
+            toast('🎉 Nice! You just rearranged your signature. Drag anytime to reorder.');
+          }
         }}
       >
         <SortableContext items={orderedSections.map(s => s.key)} strategy={verticalListSortingStrategy}>
@@ -591,7 +640,10 @@ function NameBody({ sig, updateField, fontSize }: { sig: SigData; updateField: (
       </Select>
       <ToggleRow label="Bold name" checked={sig.nameBold !== false} onChange={v => updateField('nameBold', v)} />
       <ToggleRow label="Italic title" checked={sig.jobTitleItalic ?? false} onChange={v => updateField('jobTitleItalic', v)} />
-      <ToggleRow label="Accent bar" checked={sig.showNameAccentBar !== false} onChange={v => updateField('showNameAccentBar', v)} />
+      <div className="flex items-center gap-1.5">
+        <ToggleRow label="Accent bar" checked={sig.showNameAccentBar !== false} onChange={v => updateField('showNameAccentBar', v)} />
+        <InfoTip text="A colored vertical bar that runs alongside your name, company, and tagline as one continuous strip — it adds a nice branded touch." />
+      </div>
       {sig.showNameAccentBar !== false && (
         <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-3">
           <p className="text-[11px] text-muted-foreground">One bar runs alongside the name, company and tagline together.</p>
@@ -641,7 +693,10 @@ function ContactsBody({ sig, updateField }: { sig: SigData; updateField: (k: str
       <Field label="Website" value={sig.website} field="website" updateField={updateField} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <Label className="text-xs text-muted-foreground">Icon style</Label>
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Icon style</Label>
+            <InfoTip text="'Dark mode safe' uses white icons that look great on dark email backgrounds. 'No icons' shows text only." />
+          </div>
           <Select value={sig.contactIconStyle || 'filled'} onValueChange={v => updateField('contactIconStyle', v)}>
             <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -651,7 +706,10 @@ function ContactsBody({ sig, updateField }: { sig: SigData; updateField: (k: str
           </Select>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Layout</Label>
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Layout</Label>
+            <InfoTip text="Stacked shows each contact on its own line. Two-column splits them into side-by-side columns." />
+          </div>
           <Select value={sig.contactLayout || 'stacked'} onValueChange={v => updateField('contactLayout', v)}>
             <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -668,10 +726,21 @@ function LogoBody({ sig, updateField, isCompact }: { sig: SigData; updateField: 
   return (
     <div className="space-y-3 pb-1">
       <Img label="Logo" field="logo" currentUrl={sig.logo?.[0]?.url} updateField={updateField} />
+      <div className="rounded-lg bg-primary/5 px-3 py-2.5">
+        <p className="text-[11px] font-medium text-primary">💡 Pro tip: Animated logos stand out!</p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          Use an AI video tool to animate your logo as an MP4, then convert it to a GIF at{' '}
+          <a href="https://cloudconvert.com/mp4-to-gif" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:text-primary/80">cloudconvert.com/mp4-to-gif</a>
+          {' '}and upload the GIF here. Gmail supports animated GIF logos!
+        </p>
+      </div>
       <Field label="Logo link URL" value={sig.logoLinkUrl} field="logoLinkUrl" updateField={updateField} placeholder="Makes logo clickable" />
       <SliderRow label="Size" value={sig.logoSize || 96} min={32} max={160} step={4} onChange={v => updateField('logoSize', v)} />
       <div>
-        <Label className="text-xs text-muted-foreground">Shape</Label>
+        <div className="flex items-center gap-1">
+          <Label className="text-xs text-muted-foreground">Shape</Label>
+          <InfoTip text="Controls how your logo is cropped — square has sharp corners, rounded softens them, and circle fits the logo in a round frame." />
+        </div>
         <Select value={sig.logoShape || 'square'} onValueChange={v => updateField('logoShape', v)}>
           <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="square">Square</SelectItem><SelectItem value="rounded">Rounded</SelectItem><SelectItem value="circle">Circle</SelectItem></SelectContent>
@@ -679,7 +748,10 @@ function LogoBody({ sig, updateField, isCompact }: { sig: SigData; updateField: 
       </div>
       {!isCompact && (
         <div>
-          <Label className="text-xs text-muted-foreground">Alignment</Label>
+          <div className="flex items-center gap-1">
+            <Label className="text-xs text-muted-foreground">Alignment</Label>
+            <InfoTip text="Where the logo sits vertically next to your info — top, centered, or bottom-aligned." />
+          </div>
           <Select value={sig.logoAlignment || 'top'} onValueChange={v => updateField('logoAlignment', v)}>
             <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
             <SelectContent><SelectItem value="top">Top</SelectItem><SelectItem value="middle">Middle</SelectItem><SelectItem value="bottom">Bottom</SelectItem></SelectContent>
@@ -720,6 +792,10 @@ function SocialsBody({ sig, updateField }: { sig: SigData; updateField: (k: stri
 function CtaBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <InfoTip text="Your CTA needs both button text and a link URL to show up in the signature. It's perfect for things like 'Book a Meeting' or 'Visit our site'." />
+        Both fields required to show the button
+      </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Button text" value={sig.ctaText} field="ctaText" updateField={updateField} placeholder="Book a Meeting" />
         <Field label="Button URL" value={sig.ctaUrl} field="ctaUrl" updateField={updateField} placeholder="https://..." />

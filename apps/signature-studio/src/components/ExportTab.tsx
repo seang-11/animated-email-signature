@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { generateHtml } from 'zitejs/api';
 import { Button } from '@project/components/ui/button';
-import { Copy, Code2, Download, Mail, Monitor, Apple } from 'lucide-react';
+import { Copy, Code2, Download, Mail, Monitor, Apple, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
 
@@ -121,6 +121,10 @@ export default function ExportTab({ sig, flushSave }: { sig: SigData; flushSave?
   return (
     <div className="space-y-5">
       <SectionCard icon={Copy} title="Export Actions">
+        <p className="mb-3 flex items-center gap-1.5 rounded-md bg-primary/5 px-3 py-2 text-[11px] text-muted-foreground">
+          <RefreshCw className="h-3 w-3 flex-shrink-0 text-primary" />
+          Every copy and download always regenerates from your latest edits — you'll never paste a stale version.
+        </p>
         <div className="flex flex-wrap gap-3">
           <Button onClick={copyRich} disabled={loading} className="gap-2 shadow-sm">
             <Copy className="h-4 w-4" /> Copy signature

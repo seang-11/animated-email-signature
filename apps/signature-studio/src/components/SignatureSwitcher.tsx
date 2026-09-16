@@ -61,7 +61,7 @@ export default function SignatureSwitcher({
       <div ref={ref} className="relative">
         <button
           onClick={() => { setOpen(!open); setMenuId(null); }}
-          className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm text-white transition-colors hover:bg-white/20"
+          className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
         >
           <span className="max-w-[160px] truncate">{activeName}</span>
           <ChevronDown className="h-3.5 w-3.5 opacity-60" />

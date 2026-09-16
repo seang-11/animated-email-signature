@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { loadSignature, saveSignature, createSignature, deleteSignature as deleteSigApi, duplicateSignature } from 'zitejs/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { toast } from 'sonner';
-import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle, GripVertical } from 'lucide-react';
+import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle, GripVertical, HelpCircle, Plus } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -15,6 +15,7 @@ import ExportTab from './ExportTab';
 import SignaturePreview from './SignaturePreview';
 import SignatureSwitcher from './SignatureSwitcher';
 import TemplateGallery, { type TemplateDesign } from './TemplateGallery';
+import GuidedTour, { useTour } from './GuidedTour';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import type { ZonesConfig } from '../utils/zones';
 
@@ -57,6 +58,7 @@ export default function SignatureEditor() {
   const [activeBlock, setActiveBlock] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewWidth, setPreviewWidth] = useState(0);
+  const tour = useTour();
 
   const { state: sig, updateField, updateFields, undo, redo, canUndo, canRedo, reset, markSaved, revert } = useUndoRedo(null);
   const sigRef = useRef<SigData | null>(null);
@@ -150,12 +152,20 @@ export default function SignatureEditor() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <Header status={saveStatus}>
-        <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
-      </Header>
+      <Header status={saveStatus} onHelp={tour.start} />
+
+      {/* Signature switcher — above the toolbar */}
+      <div className="border-b border-border bg-card/80">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6">
+          <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
+          <Button variant="outline" size="sm" onClick={handleNew} className="gap-1.5 text-xs shadow-sm">
+            <Plus className="h-3.5 w-3.5" /> Create new signature
+          </Button>
+        </div>
+      </div>
 
       {/* Toolbar */}
-      <div className="border-b border-border bg-card">
+      <div className="border-b border-border bg-card" data-tour="toolbar">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
           <div className="inline-flex rounded-lg bg-muted p-1">
             {tabs.map(t => (
@@ -195,7 +205,7 @@ export default function SignatureEditor() {
           </div>
 
           {/* Preview panel */}
-          <div className="lg:sticky lg:top-6 lg:self-start">
+          <div className="lg:sticky lg:top-6 lg:self-start" data-tour="preview">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
@@ -267,6 +277,8 @@ export default function SignatureEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <GuidedTour active={tour.active} step={tour.step} setStep={tour.setStep} dismiss={tour.dismiss} total={tour.total} />
     </div>
   );
 }
@@ -291,7 +303,7 @@ function SaveStatus({ status }: { status: SaveState }) {
   );
 }
 
-function Header({ status, children }: { status: SaveState; children?: React.ReactNode }) {
+function Header({ status, onHelp }: { status: SaveState; onHelp?: () => void }) {
   const saved = status === 'saved';
   return (
     <header className="bg-gradient-to-r from-secondary to-primary">
@@ -307,7 +319,11 @@ function Header({ status, children }: { status: SaveState; children?: React.Reac
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            {children}
+            {onHelp && (
+              <Button variant="ghost" size="sm" onClick={onHelp} className="gap-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white">
+                <HelpCircle className="h-4 w-4" /> <span className="hidden sm:inline">Show me around</span>
+              </Button>
+            )}
             <div className={`hidden items-center gap-1.5 text-xs sm:flex ${saved ? 'text-white/70' : 'text-white'}`}>
               {status === 'saving' ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
                 : status === 'error' ? <><AlertCircle className="h-3.5 w-3.5" /> Not saved</>

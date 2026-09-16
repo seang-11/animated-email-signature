@@ -33,6 +33,34 @@ const LOGO_RADIUS: Record<string, string> = { square: '0', rounded: '8px', circl
 
 function normalizeUrl(raw: string) { const v = (raw || '').trim(); return /^https?:\/\//i.test(v) ? v : `https://${v}`; }
 
+/* Full CSS fallback stacks for every supported font. Email clients only
+   render installed system fonts, so the stack degrades gracefully. */
+const FONT_STACKS: Record<string, string> = {
+  'Arial': 'Arial, Helvetica, sans-serif',
+  'Helvetica': 'Helvetica, Arial, sans-serif',
+  'Helvetica Neue': "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  'Times New Roman': "'Times New Roman', Times, serif",
+  'Georgia': 'Georgia, Times, serif',
+  'Verdana': 'Verdana, Geneva, sans-serif',
+  'Trebuchet MS': "'Trebuchet MS', Helvetica, sans-serif",
+  'Tahoma': 'Tahoma, Geneva, sans-serif',
+  'Segoe UI': "'Segoe UI', Tahoma, Geneva, sans-serif",
+  'Century Gothic': "'Century Gothic', CenturyGothic, AppleGothic, sans-serif",
+  'Lucida Sans': "'Lucida Sans', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, sans-serif",
+  'Impact': "Impact, 'Arial Black', sans-serif",
+  'Palatino': "'Palatino Linotype', Palatino, 'Book Antiqua', serif",
+  'Garamond': 'Garamond, Baskerville, serif',
+  'Brush Script MT': "'Brush Script MT', cursive",
+  'Courier New': "'Courier New', Courier, monospace",
+  // Google / preview-only — fallback to closest system font
+  'Inter': "Inter, 'Segoe UI', Arial, sans-serif",
+  'Outfit': "Outfit, 'Segoe UI', Arial, sans-serif",
+  'Plus Jakarta Sans': "'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif",
+  'Playfair Display': "'Playfair Display', Georgia, serif",
+  'Lora': 'Lora, Georgia, serif',
+};
+function fStack(name: string): string { return FONT_STACKS[name] || `${name}, Arial, sans-serif`; }
+
 export default createEndpoint({
   description: 'Generates email-client-ready HTML for the signature',
   authenticated: true,
@@ -48,6 +76,8 @@ export default createEndpoint({
     const textColor = s.textColor || '#333333';
     const headingFont = s.headingFont || 'Arial';
     const bodyFont = s.bodyFont || 'Arial';
+    const headingStack = fStack(headingFont);
+    const bodyStack = fStack(bodyFont);
     const logoSize = s.logoSize || 96;
     const fontSize = s.baseTextSize || 14;
     const bannerSize = s.bannerSize || 180;
@@ -156,9 +186,9 @@ export default createEndpoint({
     if (contactRows.length > 0) {
       if (contactLayout === 'two_column' && contactRows.length >= 2) {
         const mid = Math.ceil(contactRows.length / 2);
-        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;"><tr><td style="vertical-align:top;padding-right:20px;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(0, mid).join('')}</table></td><td style="vertical-align:top;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(mid).join('')}</table></td></tr></table>`;
+        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyStack};"><tr><td style="vertical-align:top;padding-right:20px;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(0, mid).join('')}</table></td><td style="vertical-align:top;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(mid).join('')}</table></td></tr></table>`;
       } else {
-        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${contactRows.join('')}</table>`;
+        contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyStack};">${contactRows.join('')}</table>`;
       }
     }
 
@@ -169,7 +199,7 @@ export default createEndpoint({
         : `<span style="color:${dividerColor};font-weight:normal;padding:0 7px;">${SEPARATOR_MAP[separator] || '|'}</span><span style="color:${titleColor};font-weight:normal;font-size:${titleSize}px;${titleItalic ? 'font-style:italic;' : ''}">${s.jobTitle}</span>`
     ) : '';
 
-    const nameLineHtml = `<div style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}</span>${titleHtml}</div>`;
+    const nameLineHtml = `<div style="font-family:${headingStack};font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}</span>${titleHtml}</div>`;
 
     /* ─── Company line ─── */
     const companyLineHtml = s.company
@@ -184,7 +214,7 @@ export default createEndpoint({
     const socialBlock = socialHtml ? `<div style="margin:0;">${socialHtml}</div>` : '';
 
     const ctaBlock = showCta && ctaText && ctaUrl
-      ? `<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:${ctaBg};border-radius:6px;padding:10px 24px;text-align:center;"><a href="${normalizeUrl(ctaUrl)}" target="_blank" style="color:${ctaTextClr};text-decoration:none;font-size:${fontSize - 1}px;font-weight:bold;font-family:${bodyFont},sans-serif;display:inline-block;">${ctaText}</a></td></tr></table>`
+      ? `<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:${ctaBg};border-radius:6px;padding:10px 24px;text-align:center;"><a href="${normalizeUrl(ctaUrl)}" target="_blank" style="color:${ctaTextClr};text-decoration:none;font-size:${fontSize - 1}px;font-weight:bold;font-family:${bodyStack};display:inline-block;">${ctaText}</a></td></tr></table>`
       : '';
 
     /* ─── Block map ─── */
@@ -198,7 +228,7 @@ export default createEndpoint({
     const layout = s.layout || 'Logo Left';
     if (layout === 'Compact') {
       const sep = SEPARATOR_MAP[separator] || '|';
-      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr></table>`;
+      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyStack};max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingStack};font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr></table>`;
       return { html };
     }
 
@@ -208,7 +238,7 @@ export default createEndpoint({
     const BAR_BLOCKS = new Set<BlockId>(['name', 'company', 'tagline']);
 
     function stack(items: string[]): string {
-      return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${items.map((html, i) => `<tr><td${i < items.length - 1 ? ` style="padding-bottom:${spacing}px;"` : ''}>${html}</td></tr>`).join('')}</table>`;
+      return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyStack};">${items.map((html, i) => `<tr><td${i < items.length - 1 ? ` style="padding-bottom:${spacing}px;"` : ''}>${html}</td></tr>`).join('')}</table>`;
     }
 
     function renderZoneHtml(blocks: BlockId[]): string {
@@ -252,7 +282,7 @@ export default createEndpoint({
 
     const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 2 : 0) + 1;
 
-    const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr>${cols}</tr>${bottomHtml ? `<tr><td colspan="${colCount}" style="padding-top:${spacing}px;">${bottomHtml}</td></tr>` : ''}</table>`;
+    const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyStack};max-width:600px;"><tr>${cols}</tr>${bottomHtml ? `<tr><td colspan="${colCount}" style="padding-top:${spacing}px;">${bottomHtml}</td></tr>` : ''}</table>`;
     return { html };
   },
 });
