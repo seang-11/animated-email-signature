@@ -8,7 +8,7 @@ import { Button } from '@project/components/ui/button';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@project/components/ui/accordion';
 import {
   RotateCcw, LayoutGrid, Palette, User, Building2, Quote, Mail, Image as ImageIcon,
-  ImagePlus, Share2, MousePointerClick, Upload, X, AlertCircle, Check, ChevronDown,
+  ImagePlus, Share2, MousePointerClick, Upload, X, AlertCircle, Check, ChevronDown, GripVertical,
 } from 'lucide-react';
 import { useUpload } from 'zitejs/upload';
 import { toast } from 'sonner';
@@ -16,7 +16,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { SigData } from './SignatureEditor';
 import ColorPicker from './ColorPicker';
 import BlockArranger from './BlockArranger';
-import { getZones, PRESET_ZONES, type ZonesConfig } from '../utils/zones';
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { getZones, PRESET_ZONES, flattenZones, moveBlock, ZONE_LABELS, type ZonesConfig, type BlockId, type ZoneId } from '../utils/zones';
 
 /* ─── Reusable helpers ─── */
 function Field({ label, value, field, updateField, placeholder }: { label: string; value: string; field: string; updateField: (k: string, v: any) => void; placeholder?: string }) {
@@ -208,7 +211,7 @@ const SECTIONS: SectionDef[] = [
   { key: 'cta', icon: MousePointerClick, label: 'CTA Button', summary: ctaSummary },
 ];
 
-function SectionHeader({ section, sig, filled, justFilled }: { section: SectionDef; sig: SigData; filled: boolean; justFilled: boolean }) {
+function SectionHeader({ section, sig, filled, justFilled, zoneLabel }: { section: SectionDef; sig: SigData; filled: boolean; justFilled: boolean; zoneLabel?: string }) {
   const Icon = section.icon;
   return (
     <div className="flex items-center gap-2 w-full">
@@ -220,6 +223,11 @@ function SectionHeader({ section, sig, filled, justFilled }: { section: SectionD
         <Icon className={`h-4 w-4 ${filled ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
       </motion.div>
       <span className="text-sm font-medium">{section.label}</span>
+      {zoneLabel && (
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {zoneLabel}
+        </span>
+      )}
       <AnimatePresence>
         {filled && (
           <motion.span
@@ -237,6 +245,54 @@ function SectionHeader({ section, sig, filled, justFilled }: { section: SectionD
   );
 }
 
+/* ─── Sortable section card ─── */
+function SortableSection({
+  section, sig, filled, justFilled, zoneLabel, index, updateField, fontSize, isCompact,
+}: {
+  section: SectionDef; sig: SigData; filled: boolean; justFilled: boolean; zoneLabel?: string;
+  index: number; updateField: (k: string, v: any) => void; fontSize: number; isCompact: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.key });
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.08 + index * 0.04 }}
+    >
+      <div
+        ref={setNodeRef}
+        style={{ transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.4 : 1, position: 'relative', zIndex: isDragging ? 20 : undefined }}
+      >
+      <AccordionItem
+        value={section.key}
+        className="rounded-xl border border-border bg-card pl-2 pr-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 group"
+      >
+        <div className="flex items-center">
+          <span
+            {...attributes}
+            {...listeners}
+            onClick={e => e.stopPropagation()}
+            title="Drag to reorder in your signature"
+            className="-ml-0.5 mr-1 cursor-grab rounded p-1 text-muted-foreground/40 transition-colors hover:bg-muted hover:text-primary active:cursor-grabbing"
+            style={{ touchAction: 'none' }}
+          >
+            <GripVertical className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <AccordionTrigger className="w-full py-3 hover:no-underline [&>svg]:transition-transform [&>svg]:duration-200">
+              <SectionHeader section={section} sig={sig} filled={filled} justFilled={justFilled} zoneLabel={zoneLabel} />
+            </AccordionTrigger>
+          </div>
+        </div>
+        <AccordionContent>
+          <SectionBody sectionKey={section.key} sig={sig} updateField={updateField} fontSize={fontSize} isCompact={isCompact} />
+        </AccordionContent>
+      </AccordionItem>
+      </div>
+    </motion.div>
+  );
+}
+
 /* ─── Main component ─── */
 export default function EditTab({ sig, updateField, activeBlock, onActiveBlockChange }: {
   sig: SigData;
@@ -247,6 +303,17 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
   const fontSize = sig.baseTextSize || 14;
   const zones = getZones(sig);
   const isCompact = sig.layout === 'Compact';
+
+  /* Section cards follow the real top-to-bottom order of the signature */
+  const sectionSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const [draggingSection, setDraggingSection] = useState<string | null>(null);
+  const flat = flattenZones(zones);
+  const zoneOf: Record<string, ZoneId> = {};
+  for (const f of flat) zoneOf[f.id] = f.zone;
+  const orderedSections = [
+    ...flat.map(f => SECTIONS.find(s => s.key === f.id)).filter(Boolean) as SectionDef[],
+    ...SECTIONS.filter(s => !zoneOf[s.key]),
+  ];
 
   const handlePreset = (preset: string) => {
     updateField('layout', preset);
@@ -434,29 +501,49 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         </AnimatePresence>
       </motion.div>
 
-      {/* ── Block accordion — staggered entry ── */}
-      <Accordion type="single" collapsible value={activeBlock} onValueChange={onActiveBlockChange} className="space-y-2">
-        {SECTIONS.map((section, i) => (
-          <motion.div
-            key={section.key}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.08 + i * 0.04 }}
-          >
-            <AccordionItem
-              value={section.key}
-              className="rounded-xl border border-border bg-card px-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 group"
-            >
-              <AccordionTrigger className="py-3 hover:no-underline [&>svg]:transition-transform [&>svg]:duration-200">
-                <SectionHeader section={section} sig={sig} filled={filledMap[section.key]} justFilled={!!justFilled[section.key]} />
-              </AccordionTrigger>
-              <AccordionContent>
-                <SectionBody sectionKey={section.key} sig={sig} updateField={updateField} fontSize={fontSize} isCompact={isCompact} />
-              </AccordionContent>
-            </AccordionItem>
-          </motion.div>
-        ))}
-      </Accordion>
+      {/* ── Block accordion — drag the cards to reorder the signature ── */}
+      <div className="flex items-center gap-1.5 px-1 text-[11px] text-muted-foreground">
+        <GripVertical className="h-3 w-3" /> Drag a card to move that part of your signature — the preview updates instantly
+      </div>
+      <DndContext
+        sensors={sectionSensors}
+        collisionDetection={closestCenter}
+        onDragStart={e => setDraggingSection(e.active.id as string)}
+        onDragCancel={() => setDraggingSection(null)}
+        onDragEnd={e => {
+          setDraggingSection(null);
+          const { active, over } = e;
+          if (!over || active.id === over.id) return;
+          handleZonesChange(moveBlock(zones, active.id as BlockId, over.id as BlockId));
+        }}
+      >
+        <SortableContext items={orderedSections.map(s => s.key)} strategy={verticalListSortingStrategy}>
+          <Accordion type="single" collapsible value={activeBlock} onValueChange={onActiveBlockChange} className="space-y-2">
+            {orderedSections.map((section, i) => (
+              <SortableSection
+                key={section.key}
+                section={section}
+                sig={sig}
+                filled={filledMap[section.key]}
+                justFilled={!!justFilled[section.key]}
+                zoneLabel={zoneOf[section.key] && zoneOf[section.key] !== 'main' ? ZONE_LABELS[zoneOf[section.key]] : undefined}
+                index={i}
+                updateField={updateField}
+                fontSize={fontSize}
+                isCompact={isCompact}
+              />
+            ))}
+          </Accordion>
+        </SortableContext>
+        <DragOverlay>
+          {draggingSection ? (
+            <div className="flex items-center gap-1.5 rounded-lg border border-primary bg-card px-3 py-2 text-sm font-medium shadow-lg">
+              <GripVertical className="h-3.5 w-3.5 text-primary" />
+              {SECTIONS.find(s => s.key === draggingSection)?.label}
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       <Button variant="outline" onClick={resetDefaults} className="gap-2"><RotateCcw className="h-4 w-4" /> Reset all</Button>
     </div>

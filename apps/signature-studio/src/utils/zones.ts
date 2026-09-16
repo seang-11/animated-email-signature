@@ -63,3 +63,37 @@ export function getZones(sig: Record<string, any>): ZonesConfig {
   const layout = sig.layout || 'Logo Left';
   return PRESET_ZONES[layout] || PRESET_ZONES['Logo Left'];
 }
+
+/** Zones flattened into one top-to-bottom list, each block tagged with its zone. */
+export function flattenZones(zones: ZonesConfig): { id: BlockId; zone: ZoneId }[] {
+  const flat: { id: BlockId; zone: ZoneId }[] = [];
+  for (const zone of ZONE_IDS) for (const id of zones[zone]) flat.push({ id, zone });
+  return flat;
+}
+
+/** Rebuilds a zones config from a flat, ordered list. */
+export function rebuildZones(flat: { id: BlockId; zone: ZoneId }[]): ZonesConfig {
+  const out = { left: [], main: [], bottom: [] } as ZonesConfig;
+  for (const { id, zone } of flat) out[zone].push(id);
+  return out;
+}
+
+/**
+ * Moves `activeId` to where `overId` sits in the flattened order. The moved block
+ * adopts the zone of whatever now sits above it (or below it, at the very top),
+ * so dragging a block next to the logo puts it in the logo's column.
+ */
+export function moveBlock(zones: ZonesConfig, activeId: BlockId, overId: BlockId): ZonesConfig {
+  const flat = flattenZones(zones);
+  const from = flat.findIndex(f => f.id === activeId);
+  const to = flat.findIndex(f => f.id === overId);
+  if (from < 0 || to < 0 || from === to) return zones;
+  const moved = flat[from];
+  const next = [...flat];
+  next.splice(from, 1);
+  next.splice(to, 0, moved);
+  const idx = next.findIndex(f => f.id === activeId);
+  const neighbour = idx > 0 ? next[idx - 1] : next[idx + 1];
+  next[idx] = { id: activeId, zone: neighbour ? neighbour.zone : moved.zone };
+  return rebuildZones(next);
+}
