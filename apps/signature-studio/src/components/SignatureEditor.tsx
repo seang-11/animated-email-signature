@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { loadSignature, saveSignature, createSignature, deleteSignature as deleteSigApi, duplicateSignature } from 'zitejs/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { toast } from 'sonner';
-import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle } from 'lucide-react';
+import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle, GripVertical } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -16,6 +16,7 @@ import SignaturePreview from './SignaturePreview';
 import SignatureSwitcher from './SignatureSwitcher';
 import TemplateGallery, { type TemplateDesign } from './TemplateGallery';
 import { useUndoRedo } from '../hooks/useUndoRedo';
+import type { ZonesConfig } from '../utils/zones';
 
 export type SigData = Record<string, any>;
 
@@ -98,6 +99,10 @@ export default function SignatureEditor() {
   useEffect(() => { if (sig && sig.id) debouncedSave(); }, [sig, debouncedSave]);
 
   const saveNow = useCallback(() => { debouncedSave.cancel(); doSave(); }, [debouncedSave, doSave]);
+  const flushSave = useCallback(async () => { debouncedSave.cancel(); await doSave({ silent: true }); }, [debouncedSave, doSave]);
+  const handleZonesChange = useCallback((zones: ZonesConfig) => {
+    handleUpdateField('layoutZones', JSON.stringify(zones));
+  }, [handleUpdateField]);
 
   // Cmd/Ctrl + S saves immediately
   useEffect(() => {
@@ -186,13 +191,18 @@ export default function SignatureEditor() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div>
             {tab === 'edit' && <EditTab sig={sig} updateField={handleUpdateField} activeBlock={activeBlock} onActiveBlockChange={setActiveBlock} />}
-            {tab === 'export' && <ExportTab sig={sig} />}
+            {tab === 'export' && <ExportTab sig={sig} flushSave={flushSave} />}
           </div>
 
           {/* Preview panel */}
           <div className="lg:sticky lg:top-6 lg:self-start">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
+                <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground/70">
+                  <GripVertical className="h-3 w-3" /> Drag any part to rearrange it — click to edit
+                </p>
+              </div>
               <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)} className="h-7 gap-1 text-xs text-muted-foreground">
                 <Maximize2 className="h-3.5 w-3.5" /> Expand
               </Button>
@@ -210,8 +220,8 @@ export default function SignatureEditor() {
                 <div className="mb-6 space-y-1.5 text-sm text-gray-400">
                   <div className="h-2.5 w-3/4 rounded bg-gray-100" /><div className="h-2.5 w-1/2 rounded bg-gray-100" /><div className="h-2.5 w-2/3 rounded bg-gray-100" />
                 </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} />
+                <div className="border-t border-gray-100 pl-5 pt-4">
+                  <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} onZonesChange={handleZonesChange} />
                 </div>
               </div>
             </div>
@@ -238,7 +248,7 @@ export default function SignatureEditor() {
           </div>
           <div className="overflow-auto bg-white p-6" style={{ maxHeight: '70vh' }}>
             <div className="mx-auto" style={previewWidth ? { maxWidth: previewWidth } : undefined}>
-              <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} />
+              <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} onZonesChange={handleZonesChange} />
             </div>
           </div>
         </DialogContent>

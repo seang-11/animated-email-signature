@@ -57,15 +57,17 @@ const CLIENTS = [
   },
 ];
 
-export default function ExportTab({ sig }: { sig: SigData }) {
+export default function ExportTab({ sig, flushSave }: { sig: SigData; flushSave?: () => Promise<void> }) {
   const [html, setHtml] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [client, setClient] = useState('gmail');
 
+  /* Always regenerate: save any pending edits first, then build fresh HTML so a
+     copy always matches what's on screen. */
   const fetchHtml = async () => {
-    if (html) return html;
     setLoading(true);
     try {
+      if (flushSave) await flushSave();
       const res = await generateHtml({ id: sig.id });
       setHtml(res.html);
       return res.html;
