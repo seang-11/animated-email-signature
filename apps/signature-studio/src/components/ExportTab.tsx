@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { generateHtml } from 'zitejs/api';
 import { Button } from '@project/components/ui/button';
-import { Copy, Code2, Download, Mail, Monitor, Apple, RefreshCw } from 'lucide-react';
+import { Copy, Code2, Download, Mail, Monitor, Apple, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
 
@@ -15,6 +15,19 @@ function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType;
         <p className="text-sm font-semibold text-foreground">{title}</p>
       </div>
       {children}
+    </div>
+  );
+}
+
+function QuirkItem({ client, notes }: { client: string; notes: string[] }) {
+  return (
+    <div className="rounded-lg border border-border px-3 py-2.5">
+      <p className="mb-1 text-xs font-semibold text-foreground">{client}</p>
+      <ul className="space-y-0.5">
+        {notes.map((n, i) => (
+          <li key={i} className="text-[11px] text-muted-foreground">• {n}</li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -136,6 +149,14 @@ export default function ExportTab({ sig, flushSave }: { sig: SigData; flushSave?
             <Download className="h-4 w-4" /> Download .html
           </Button>
         </div>
+        <div className="mt-4 space-y-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+          <p className="text-[11px] font-medium text-foreground">Which button should I use?</p>
+          <ul className="space-y-1 text-[11px] text-muted-foreground">
+            <li><strong className="text-foreground">Copy signature</strong> — ⭐ the one most people want. Pastes your formatted signature directly into Gmail, Outlook, or Apple Mail. Just paste (Ctrl+V / Cmd+V) in the signature editor.</li>
+            <li><strong className="text-foreground">Copy HTML</strong> — copies the raw HTML source code. Useful if your email client has an "Insert HTML" option or if you need to give the code to a developer.</li>
+            <li><strong className="text-foreground">Download .html</strong> — saves the signature as a file. Handy for backup, sharing with teammates, or importing into tools that accept HTML files.</li>
+          </ul>
+        </div>
       </SectionCard>
 
       {html && (
@@ -170,6 +191,43 @@ export default function ExportTab({ sig, flushSave }: { sig: SigData; flushSave?
             </li>
           ))}
         </ol>
+      </SectionCard>
+
+      {/* Email client quirks */}
+      <SectionCard icon={AlertTriangle} title="Email Client Quirks">
+        <p className="mb-3 text-[11px] text-muted-foreground">
+          Email clients render HTML differently from web browsers. Here's what to expect:
+        </p>
+        <div className="space-y-3">
+          <QuirkItem
+            client="Gmail"
+            notes={[
+              "Supports most fonts and images well. GIF animations work.",
+              "May strip some styles if the signature is very complex.",
+              "Images need to be hosted online (uploaded images already are).",
+            ]}
+          />
+          <QuirkItem
+            client="Outlook (desktop)"
+            notes={[
+              "Uses Word's rendering engine, which is less flexible than browsers.",
+              "May add extra spacing around images or ignore some padding.",
+              "Custom/Google fonts will fall back to system defaults (Arial, Times).",
+              "Rounded corners on buttons may appear as sharp rectangles.",
+            ]}
+          />
+          <QuirkItem
+            client="Apple Mail"
+            notes={[
+              "Generally the best rendering — closest to what you see in the preview.",
+              "Supports most fonts, images, and layout features.",
+              "Drag your signature onto an email account after creating it.",
+            ]}
+          />
+        </div>
+        <p className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-[11px] text-muted-foreground">
+          💡 <strong className="text-foreground">Tip:</strong> Stick to email-safe fonts (Arial, Georgia, Verdana, etc.) and keep images under 600px wide for the most consistent results across all clients.
+        </p>
       </SectionCard>
     </div>
   );

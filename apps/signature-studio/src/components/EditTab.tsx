@@ -120,6 +120,51 @@ function Img({ label, field, currentUrl, updateField }: { label: string; field: 
 }
 
 /* ─── Layout config ─── */
+
+function ZonesExplainer() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3 rounded-lg border border-border">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-1.5 px-3 py-2 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+      >
+        <span>💡 How zones & layouts work</span>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-3 w-3" />
+        </motion.div>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-2 px-3 pb-3 text-[11px] leading-relaxed text-muted-foreground">
+              <p>Your signature is divided into three <strong className="text-foreground">zones</strong>:</p>
+              <ul className="space-y-1.5 pl-3">
+                <li><strong className="text-foreground">Left</strong> — a sidebar column, perfect for your logo. Sits side-by-side with Main.</li>
+                <li><strong className="text-foreground">Main</strong> — the primary column where most of your info lives: name, company, contacts, socials.</li>
+                <li><strong className="text-foreground">Bottom</strong> — spans the full width underneath. Great for banners, legal text, or taglines.</li>
+              </ul>
+              <p className="pt-1"><strong className="text-foreground">Reordering within a zone</strong> changes the top-to-bottom order of items in that column. <strong className="text-foreground">Moving between zones</strong> changes where a block appears structurally (e.g. moving Logo from Main to Left makes it a sidebar).</p>
+              <p className="pt-1"><strong className="text-foreground">Presets:</strong></p>
+              <ul className="space-y-1 pl-3">
+                <li><strong className="text-foreground">Logo Left</strong> — classic look with logo in a sidebar and everything else in the main column.</li>
+                <li><strong className="text-foreground">Stacked</strong> — everything in a single vertical column, no sidebar.</li>
+                <li><strong className="text-foreground">Compact</strong> — minimal layout, just logo + name + company + contacts.</li>
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 const LAYOUTS = [
   { value: 'Logo Left', label: 'Logo Left', desc: 'Side-by-side' },
   { value: 'Stacked', label: 'Stacked', desc: 'Vertical' },
@@ -413,13 +458,15 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         <div className="space-y-5">
           {/* Accent color */}
           <div>
-            <Label className="mb-2 block text-xs text-muted-foreground">Accent color</Label>
+            <Label className="mb-1 block text-xs text-muted-foreground">Accent color</Label>
+            <p className="mb-2 text-[11px] text-muted-foreground/70">Used for your name, accent bar, CTA button, and social icon backgrounds.</p>
             <ColorPicker value={sig.accentColor || '#111111'} onChange={v => updateField('accentColor', v)} />
           </div>
 
           {/* Text color */}
           <div>
-            <Label className="mb-2 block text-xs text-muted-foreground">Text color</Label>
+            <Label className="mb-1 block text-xs text-muted-foreground">Text color</Label>
+            <p className="mb-2 text-[11px] text-muted-foreground/70">The default color for body text — job title, company, contacts, and tagline.</p>
             <ColorPicker value={sig.textColor || '#333333'} onChange={v => updateField('textColor', v)} />
           </div>
 
@@ -455,9 +502,12 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
           </div>
 
           {/* Size sliders */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
-            <SliderRow label="Block spacing" value={sig.blockSpacing ?? 8} min={2} max={20} step={1} onChange={v => updateField('blockSpacing', v)} />
+          <div className="space-y-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
+              <SliderRow label="Block spacing" value={sig.blockSpacing ?? 8} min={2} max={20} step={1} onChange={v => updateField('blockSpacing', v)} />
+            </div>
+            <p className="text-[11px] text-muted-foreground/70">Base text size sets the default for contacts and body text. Block spacing controls the gap between each part of your signature.</p>
           </div>
 
           {/* Collapsible divider sub-group */}
@@ -500,6 +550,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.04 }}
         className="rounded-xl border border-border bg-card shadow-sm"
+        data-tour="layout"
       >
         <button
           onClick={() => setLayoutOpen(!layoutOpen)}
@@ -533,6 +584,10 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
                     </button>
                   ))}
                 </div>
+
+                {/* Zones explainer */}
+                <ZonesExplainer />
+
                 {!isCompact && (
                   <div className="mt-3">
                     <p className="mb-1.5 text-[10px] font-medium text-muted-foreground">Drag blocks between zones</p>
@@ -599,6 +654,28 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
   );
 }
 
+/* ─── Section intro blurbs ─── */
+const SECTION_INTROS: Record<string, string> = {
+  name: "This is the most prominent part of your signature — your name and job title. Tip: keep your name bold and slightly larger than everything else so it anchors the whole block.",
+  company: "Your company name appears below your name. Keep it concise — skip legal suffixes like \"Inc.\" or \"LLC\" for a cleaner look.",
+  tagline: "A short phrase under your company — great for a mission statement, slogan, or department name. One line max works best.",
+  contacts: "How people reach you. Most signatures include email and phone; add your website if you want people to visit it. Tip: skip \"www.\" for a cleaner look.",
+  logo: "Your brand's visual identity. Square logos under 200×200px look sharpest. GIFs are supported too — animated logos really stand out!",
+  banner: "A full-width image that appears below your signature — perfect for promotions, event announcements, or seasonal branding. Make it clickable with a link URL.",
+  socials: "Add links to your social profiles. Only filled-in platforms show up in your signature. Paste the full profile URL (not just the username).",
+  cta: "A call-to-action button that drives a specific action — booking a meeting, visiting a landing page, or downloading something. Both text and a URL are required for it to appear.",
+};
+
+function SectionIntro({ sectionKey }: { sectionKey: string }) {
+  const text = SECTION_INTROS[sectionKey];
+  if (!text) return null;
+  return (
+    <p className="mb-2 rounded-md bg-muted/50 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+      {text}
+    </p>
+  );
+}
+
 /* ─── Section body (keeps the main component lean) ─── */
 function SectionBody({ sectionKey, sig, updateField, fontSize, isCompact }: {
   sectionKey: string; sig: SigData; updateField: (k: string, v: any) => void; fontSize: number; isCompact: boolean;
@@ -619,6 +696,7 @@ function SectionBody({ sectionKey, sig, updateField, fontSize, isCompact }: {
 function NameBody({ sig, updateField, fontSize }: { sig: SigData; updateField: (k: string, v: any) => void; fontSize: number }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="name" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Full name" value={sig.fullName} field="fullName" updateField={updateField} />
         <Field label="Job title" value={sig.jobTitle} field="jobTitle" updateField={updateField} />
@@ -658,6 +736,7 @@ function NameBody({ sig, updateField, fontSize }: { sig: SigData; updateField: (
 function CompanyBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="company" />
       <Field label="Company name" value={sig.company} field="company" updateField={updateField} />
       <SliderRow label="Size" value={sig.companySize || 13} min={9} max={18} step={1} onChange={v => updateField('companySize', v)} />
       <div><Label className="mb-1 block text-xs text-muted-foreground">Color</Label><ColorPicker value={sig.companyColor || ''} onChange={v => updateField('companyColor', v)} placeholder="Inherits text" /></div>
@@ -672,6 +751,7 @@ function CompanyBody({ sig, updateField }: { sig: SigData; updateField: (k: stri
 function TaglineBody({ sig, updateField, fontSize }: { sig: SigData; updateField: (k: string, v: any) => void; fontSize: number }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="tagline" />
       <Field label="Tagline" value={sig.tagline} field="tagline" updateField={updateField} />
       <SliderRow label="Size" value={sig.taglineSize || fontSize - 2} min={8} max={18} step={1} onChange={v => updateField('taglineSize', v)} />
       <div><Label className="mb-1 block text-xs text-muted-foreground">Color</Label><ColorPicker value={sig.taglineColor || ''} onChange={v => updateField('taglineColor', v)} placeholder="Inherits accent" /></div>
@@ -686,6 +766,7 @@ function TaglineBody({ sig, updateField, fontSize }: { sig: SigData; updateField
 function ContactsBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="contacts" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label="Email" value={sig.emailAddress} field="emailAddress" updateField={updateField} />
         <Field label="Phone" value={sig.phone} field="phone" updateField={updateField} />
@@ -725,6 +806,7 @@ function ContactsBody({ sig, updateField }: { sig: SigData; updateField: (k: str
 function LogoBody({ sig, updateField, isCompact }: { sig: SigData; updateField: (k: string, v: any) => void; isCompact: boolean }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="logo" />
       <Img label="Logo" field="logo" currentUrl={sig.logo?.[0]?.url} updateField={updateField} />
       <div className="rounded-lg bg-primary/5 px-3 py-2.5">
         <p className="text-[11px] font-medium text-primary">💡 Pro tip: Animated logos stand out!</p>
@@ -765,6 +847,7 @@ function LogoBody({ sig, updateField, isCompact }: { sig: SigData; updateField: 
 function BannerBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="banner" />
       <Img label="Banner" field="bannerImage" currentUrl={sig.bannerImage?.[0]?.url} updateField={updateField} />
       <Field label="Banner link URL" value={sig.bannerLinkUrl} field="bannerLinkUrl" updateField={updateField} placeholder="Makes banner clickable" />
       <SliderRow label="Width" value={sig.bannerSize || 180} min={100} max={400} step={10} onChange={v => updateField('bannerSize', v)} />
@@ -775,6 +858,7 @@ function BannerBody({ sig, updateField }: { sig: SigData; updateField: (k: strin
 function SocialsBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="socials" />
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {SOCIAL_FIELDS.map(s => (
           <div key={s.field}>
@@ -792,6 +876,7 @@ function SocialsBody({ sig, updateField }: { sig: SigData; updateField: (k: stri
 function CtaBody({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
   return (
     <div className="space-y-3 pb-1">
+      <SectionIntro sectionKey="cta" />
       <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
         <InfoTip text="Your CTA needs both button text and a link URL to show up in the signature. It's perfect for things like 'Book a Meeting' or 'Visit our site'." />
         Both fields required to show the button
