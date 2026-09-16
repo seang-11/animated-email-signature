@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { loadSignature, saveSignature, createSignature, deleteSignature as deleteSigApi, duplicateSignature } from 'zitejs/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { toast } from 'sonner';
-import { Pen, Palette, Share2, Check, Undo2, Redo2, RotateCcw, CloudOff } from 'lucide-react';
+import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, CloudOff, Maximize2, X } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from '@project/components/ui/alert-dialog';
-import ContentTab from './ContentTab';
-import DesignTab from './DesignTab';
+import { Dialog, DialogContent } from '@project/components/ui/dialog';
+import EditTab from './EditTab';
 import ExportTab from './ExportTab';
 import SignaturePreview from './SignaturePreview';
 import SignatureSwitcher from './SignatureSwitcher';
@@ -22,13 +22,18 @@ export type SigData = Record<string, any>;
 const LOGO_URL = 'https://images.fillout.com/orgid-446582/flowpublicid-account/widgetid-branding-kit-logo/w1e7UPFZKZX7KRzv6ZBmCz/logo-icon.png';
 
 const tabs = [
-  { key: 'content' as const, label: 'Content', icon: Pen },
-  { key: 'design' as const, label: 'Design', icon: Palette },
+  { key: 'edit' as const, label: 'Edit', icon: Pen },
   { key: 'export' as const, label: 'Export', icon: Share2 },
 ];
 
+const WIDTH_PRESETS = [
+  { label: 'Gmail Narrow', px: 500 },
+  { label: 'Gmail Wide', px: 800 },
+  { label: 'Full', px: 0 },
+];
+
 export default function SignatureEditor() {
-  const [tab, setTab] = useState<'content' | 'design' | 'export'>('content');
+  const [tab, setTab] = useState<'edit' | 'export'>('edit');
   const [signatures, setSignatures] = useState<SigData[]>([]);
   const [loading, setLoading] = useState(true);
   const [justSaved, setJustSaved] = useState(false);
@@ -36,192 +41,90 @@ export default function SignatureEditor() {
   const [firstRun, setFirstRun] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
   const [galleryMode, setGalleryMode] = useState<'first-run' | 'new'>('first-run');
+  const [activeBlock, setActiveBlock] = useState('');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewWidth, setPreviewWidth] = useState(0);
 
   const { state: sig, updateField, updateFields, undo, redo, canUndo, canRedo, reset, markSaved, revert } = useUndoRedo(null);
 
-  // Load signatures
   const load = useCallback(async (sigId?: string) => {
     try {
       const res: any = await loadSignature({ signatureId: sigId });
-      if (res.firstRun) {
-        setFirstRun(true);
-        setShowGallery(true);
-        setGalleryMode('first-run');
-      } else {
-        setSignatures(res.signatures);
-        if (res.signature) reset(res.signature);
-      }
-    } catch {
-      toast.error('Failed to load signature');
-    } finally {
-      setLoading(false);
-    }
+      if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); }
+      else { setSignatures(res.signatures); if (res.signature) reset(res.signature); }
+    } catch { toast.error('Failed to load signature'); }
+    finally { setLoading(false); }
   }, [reset]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Debounced auto-save
   const debouncedSave = useDebouncedCallback((data: SigData) => {
     if (!data.id) return;
     const { id, lastUpdated, owner, ...fields } = data;
-    saveSignature({ id, fields }).then(() => {
-      setJustSaved(true);
-      markSaved();
-      setTimeout(() => setJustSaved(false), 2000);
-    }).catch(() => toast.error('Save failed'));
+    saveSignature({ id, fields }).then(() => { setJustSaved(true); markSaved(); setTimeout(() => setJustSaved(false), 2000); }).catch(() => toast.error('Save failed'));
   }, 800);
 
-  // Wrap updateField to also trigger save
-  const handleUpdateField = useCallback((key: string, value: any) => {
-    updateField(key, value);
-    // We need to trigger save after the state updates
-  }, [updateField]);
+  const handleUpdateField = useCallback((key: string, value: any) => { updateField(key, value); }, [updateField]);
+  useEffect(() => { if (sig && sig.id) debouncedSave(sig); }, [sig, debouncedSave]);
 
-  // Watch for sig changes → trigger save
-  useEffect(() => {
-    if (sig && sig.id) {
-      debouncedSave(sig);
-    }
-  }, [sig, debouncedSave]);
-
-  // Signature switcher handlers
-  const handleSwitch = (id: string) => {
-    debouncedSave.flush();
-    load(id);
-  };
-
-  const handleNew = () => {
-    setGalleryMode('new');
-    setShowGallery(true);
-  };
-
+  const handleSwitch = (id: string) => { debouncedSave.flush(); load(id); };
+  const handleNew = () => { setGalleryMode('new'); setShowGallery(true); };
   const handleTemplateSelect = async (template: TemplateDesign | null) => {
     try {
-      const res: any = await createSignature({
-        signatureName: template ? template.label : 'New Signature',
-        template: template?.key || '',
-        designOverrides: template?.overrides || {},
-      });
-      setShowGallery(false);
-      setFirstRun(false);
-      await load(res.signature.id);
-      toast.success('Signature created');
-    } catch {
-      toast.error('Failed to create signature');
-    }
+      const res: any = await createSignature({ signatureName: template ? template.label : 'New Signature', template: template?.key || '', designOverrides: template?.overrides || {} });
+      setShowGallery(false); setFirstRun(false); await load(res.signature.id); toast.success('Signature created');
+    } catch { toast.error('Failed to create signature'); }
+  };
+  const handleDuplicate = async () => { if (!sig?.id) return; try { const res: any = await duplicateSignature({ id: sig.id }); await load(res.signature.id); toast.success('Duplicated'); } catch { toast.error('Failed to duplicate'); } };
+  const handleDelete = async (id: string) => { try { await deleteSigApi({ id }); await load(); toast.success('Deleted'); } catch (err: any) { toast.error(err?.message || 'Failed to delete'); } };
+  const handleRename = (id: string, name: string) => { saveSignature({ id, fields: { signatureName: name } }).then(() => { setSignatures(prev => prev.map(s => s.id === id ? { ...s, signatureName: name } : s)); if (sig?.id === id) updateField('signatureName', name); }); };
+  const handleSetDefault = (id: string) => { saveSignature({ id, fields: { isDefault: true } }).then(() => { setSignatures(prev => prev.map(s => ({ ...s, isDefault: s.id === id }))); if (sig?.id === id) updateField('isDefault', true); toast.success('Set as default'); }); };
+  const handleRevert = () => { revert(); setConfirmRevert(false); toast.success('Reverted'); };
+
+  const handleBlockClick = (block: string) => {
+    setActiveBlock(block);
+    setTab('edit');
+    // Scroll the accordion item into view
+    setTimeout(() => {
+      const el = document.querySelector(`[data-state="open"][data-block-accordion="${block}"]`) || document.getElementById(`accordion-${block}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
   };
 
-  const handleDuplicate = async () => {
-    if (!sig?.id) return;
-    try {
-      const res: any = await duplicateSignature({ id: sig.id });
-      await load(res.signature.id);
-      toast.success('Signature duplicated');
-    } catch {
-      toast.error('Failed to duplicate');
-    }
-  };
+  if (loading) return <div className="flex h-screen items-center justify-center bg-background"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteSigApi({ id });
-      await load();
-      toast.success('Signature deleted');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to delete');
-    }
-  };
-
-  const handleRename = (id: string, name: string) => {
-    saveSignature({ id, fields: { signatureName: name } }).then(() => {
-      setSignatures(prev => prev.map(s => s.id === id ? { ...s, signatureName: name } : s));
-      if (sig?.id === id) updateField('signatureName', name);
-    });
-  };
-
-  const handleSetDefault = (id: string) => {
-    saveSignature({ id, fields: { isDefault: true } }).then(() => {
-      setSignatures(prev => prev.map(s => ({ ...s, isDefault: s.id === id })));
-      if (sig?.id === id) updateField('isDefault', true);
-      toast.success('Set as default');
-    });
-  };
-
-  const handleRevert = () => {
-    revert();
-    setConfirmRevert(false);
-    toast.success('Reverted to last saved version');
-  };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  // Template gallery (first-run or creating new)
-  if (showGallery) {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <Header justSaved={false} />
-        <TemplateGallery
-          onSelect={handleTemplateSelect}
-          onCancel={galleryMode === 'new' ? () => setShowGallery(false) : undefined}
-          showCancel={galleryMode === 'new'}
-        />
-      </div>
-    );
-  }
+  if (showGallery) return (
+    <div className="min-h-screen bg-muted/30">
+      <Header justSaved={false} />
+      <TemplateGallery onSelect={handleTemplateSelect} onCancel={galleryMode === 'new' ? () => setShowGallery(false) : undefined} showCancel={galleryMode === 'new'} />
+    </div>
+  );
 
   if (!sig) return <div className="p-8 text-center text-muted-foreground">Could not load signature.</div>;
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Branded header */}
       <Header justSaved={justSaved}>
-        <SignatureSwitcher
-          signatures={signatures}
-          activeId={sig.id}
-          onSwitch={handleSwitch}
-          onNew={handleNew}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
-          onRename={handleRename}
-          onSetDefault={handleSetDefault}
-        />
+        <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
       </Header>
 
-      {/* Toolbar: tabs + undo/redo */}
+      {/* Toolbar */}
       <div className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
           <div className="inline-flex rounded-lg bg-muted p-1">
             {tabs.map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 sm:gap-2 sm:px-4 ${
-                  tab === t.key
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <t.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.label}</span>
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all sm:gap-2 sm:px-4 ${tab === t.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                <t.icon className="h-4 w-4" /><span className="hidden sm:inline">{t.label}</span>
               </button>
             ))}
           </div>
-
           <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
-              <Undo2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Undo</span>
+              <Undo2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Undo</span>
             </Button>
             <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
-              <Redo2 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Redo</span>
+              <Redo2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Redo</span>
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setConfirmRevert(true)} disabled={!canUndo} className="h-8 w-8 text-muted-foreground">
               <RotateCcw className="h-3.5 w-3.5" />
@@ -233,19 +136,22 @@ export default function SignatureEditor() {
       {/* Body */}
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div className="transition-opacity duration-200">
-            {tab === 'content' && <ContentTab sig={sig} updateField={handleUpdateField} />}
-            {tab === 'design' && <DesignTab sig={sig} updateField={handleUpdateField} />}
+          <div>
+            {tab === 'edit' && <EditTab sig={sig} updateField={handleUpdateField} activeBlock={activeBlock} onActiveBlockChange={setActiveBlock} />}
             {tab === 'export' && <ExportTab sig={sig} />}
           </div>
 
+          {/* Preview panel */}
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)} className="h-7 gap-1 text-xs text-muted-foreground">
+                <Maximize2 className="h-3.5 w-3.5" /> Expand
+              </Button>
+            </div>
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-md">
               <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-2.5">
-                <div className="h-3 w-3 rounded-full bg-red-400" />
-                <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                <div className="h-3 w-3 rounded-full bg-green-400" />
+                <div className="h-3 w-3 rounded-full bg-red-400" /><div className="h-3 w-3 rounded-full bg-yellow-400" /><div className="h-3 w-3 rounded-full bg-green-400" />
                 <span className="ml-3 text-xs text-muted-foreground">New Message</span>
               </div>
               <div className="space-y-1 border-b border-border bg-muted/20 px-5 py-3 text-xs text-muted-foreground">
@@ -254,12 +160,10 @@ export default function SignatureEditor() {
               </div>
               <div className="overflow-x-auto bg-white px-5 py-4">
                 <div className="mb-6 space-y-1.5 text-sm text-gray-400">
-                  <div className="h-2.5 w-3/4 rounded bg-gray-100" />
-                  <div className="h-2.5 w-1/2 rounded bg-gray-100" />
-                  <div className="h-2.5 w-2/3 rounded bg-gray-100" />
+                  <div className="h-2.5 w-3/4 rounded bg-gray-100" /><div className="h-2.5 w-1/2 rounded bg-gray-100" /><div className="h-2.5 w-2/3 rounded bg-gray-100" />
                 </div>
                 <div className="border-t border-gray-100 pt-4">
-                  <SignaturePreview sig={sig} />
+                  <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} />
                 </div>
               </div>
             </div>
@@ -267,14 +171,37 @@ export default function SignatureEditor() {
         </div>
       </div>
 
+      {/* Preview overlay */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-[900px] p-0">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold">Preview</p>
+              <div className="ml-3 inline-flex rounded-lg bg-muted p-0.5">
+                {WIDTH_PRESETS.map(wp => (
+                  <button key={wp.label} onClick={() => setPreviewWidth(wp.px)}
+                    className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${previewWidth === wp.px ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+                    {wp.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setPreviewOpen(false)} className="h-7 w-7"><X className="h-4 w-4" /></Button>
+          </div>
+          <div className="overflow-auto bg-white p-6" style={{ maxHeight: '70vh' }}>
+            <div className="mx-auto" style={previewWidth ? { maxWidth: previewWidth } : undefined}>
+              <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Revert confirmation */}
       <AlertDialog open={confirmRevert} onOpenChange={setConfirmRevert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Revert to last saved?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will undo all changes since the last auto-save. Your undo history will be preserved.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This will undo all changes since the last auto-save.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -286,7 +213,6 @@ export default function SignatureEditor() {
   );
 }
 
-/** Branded header bar */
 function Header({ justSaved, children }: { justSaved: boolean; children?: React.ReactNode }) {
   return (
     <header className="bg-gradient-to-r from-secondary to-primary">
@@ -301,15 +227,10 @@ function Header({ justSaved, children }: { justSaved: boolean; children?: React.
               <p className="hidden text-xs text-white/70 sm:block">by Prospect Automations</p>
             </div>
           </div>
-
           <div className="flex items-center gap-2 sm:gap-3">
             {children}
             <div className={`hidden items-center gap-1.5 text-xs transition-all duration-500 sm:flex ${justSaved ? 'text-white' : 'text-white/40'}`}>
-              {justSaved ? (
-                <><Check className="h-3.5 w-3.5" /> Saved</>
-              ) : (
-                <><CloudOff className="h-3 w-3" /> Auto-saving</>
-              )}
+              {justSaved ? <><Check className="h-3.5 w-3.5" /> Saved</> : <><CloudOff className="h-3 w-3" /> Auto-saving</>}
             </div>
           </div>
         </div>

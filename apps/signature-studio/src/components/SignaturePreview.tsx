@@ -48,8 +48,29 @@ function MaybeLink({ url, children }: { url?: string; children: React.ReactNode 
 const SEPARATOR_MAP: Record<string, string> = { pipe: '|', bullet: '·', dash: '—' };
 const LOGO_RADIUS: Record<string, string> = { square: '0', rounded: '8px', circle: '50%' };
 
-export default function SignaturePreview({ sig }: { sig: SigData }) {
-  /* ─── Extract values ─── */
+/* ─── Clickable block wrapper ─── */
+function BlockWrap({ id, active, onClick, children }: { id: BlockId; active: boolean; onClick?: (id: BlockId) => void; children: React.ReactNode }) {
+  if (!onClick) return <>{children}</>;
+  return (
+    <div
+      onClick={e => { e.stopPropagation(); onClick(id); }}
+      className="cursor-pointer rounded transition-all duration-200"
+      style={{
+        outline: active ? '2px solid rgba(62,111,231,0.5)' : 'none',
+        outlineOffset: 3,
+        borderRadius: 4,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
+  sig: SigData;
+  activeBlock?: string;
+  onBlockClick?: (block: string) => void;
+}) {
   const accent = sig.accentColor || '#111111';
   const textColor = sig.textColor || '#333333';
   const headingFont = sig.headingFont || 'Arial';
@@ -109,6 +130,9 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const logoRadius = LOGO_RADIUS[logoShape] || '0';
   const logoAlignMap: Record<string, string> = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
 
+  const isActive = (id: BlockId) => activeBlock === id;
+  const handleClick = onBlockClick as ((id: BlockId) => void) | undefined;
+
   /* ─── Build block elements ─── */
   const socials = Object.entries(SOCIAL_ICONS).filter(([k]) => sig[k]).map(([k, v]) => ({ url: sig[k], ...v }));
 
@@ -142,33 +166,25 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     <div style={{ display: 'flex', alignItems: 'stretch', gap: showAccentBar ? 10 : 0 }}>
       {showAccentBar && <div style={{ width: dividerThickness + 2, background: accent, flexShrink: 0, borderRadius: 2 }} />}
       <div style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, lineHeight: `${nameSize + 8}px`, color: nameColor }}>
-        <span style={{ fontWeight: nameBold ? 'bold' : 'normal' }}>
-          {sig.fullName}
-        </span>
+        <span style={{ fontWeight: nameBold ? 'bold' : 'normal' }}>{sig.fullName}</span>
         {titleEl}
       </div>
     </div>
   );
 
   const companyLine = sig.company ? (
-    <p style={{ margin: `2px 0 0 ${showAccentBar ? 13 : 0}px`, fontSize: companySize, color: companyColor, fontWeight: companyBold ? 'bold' : 'normal', fontStyle: companyItalic ? 'italic' : 'normal', textTransform: companyUppercase ? 'uppercase' : 'none', letterSpacing: companyLS, lineHeight: `${companySize + 5}px` }}>
-      {sig.company}
-    </p>
+    <p style={{ margin: `2px 0 0 ${showAccentBar ? 13 : 0}px`, fontSize: companySize, color: companyColor, fontWeight: companyBold ? 'bold' : 'normal', fontStyle: companyItalic ? 'italic' : 'normal', textTransform: companyUppercase ? 'uppercase' : 'none', letterSpacing: companyLS, lineHeight: `${companySize + 5}px` }}>{sig.company}</p>
   ) : null;
 
   const taglineLine = sig.tagline ? (
-    <p style={{ fontSize: taglineSize, letterSpacing: taglineLS, color: taglineColor, textTransform: taglineUppercase ? 'uppercase' : 'none' as any, fontWeight: taglineBold ? 'bold' : 'normal', fontStyle: taglineItalic ? 'italic' : 'normal' }}>
-      {sig.tagline}
-    </p>
+    <p style={{ fontSize: taglineSize, letterSpacing: taglineLS, color: taglineColor, textTransform: taglineUppercase ? 'uppercase' : 'none' as any, fontWeight: taglineBold ? 'bold' : 'normal', fontStyle: taglineItalic ? 'italic' : 'normal' }}>{sig.tagline}</p>
   ) : null;
 
   const logoImg = logoUrl ? <MaybeLink url={logoLinkUrl}><img src={logoUrl} width={logoSize} alt="Logo" style={{ display: 'block', height: 'auto', borderRadius: logoRadius }} /></MaybeLink> : null;
   const bannerImg = bannerUrl ? <MaybeLink url={bannerLinkUrl}><img src={bannerUrl} width={bannerSize} alt="Banner" style={{ display: 'block' }} /></MaybeLink> : null;
 
   const ctaButton = showCta && ctaText && ctaUrl ? (
-    <a href={webUrl(ctaUrl)} target="_blank" rel="noreferrer" style={{ display: 'inline-block', padding: '10px 24px', backgroundColor: ctaBg, color: ctaTextColor, borderRadius: '6px', textDecoration: 'none', fontSize: fontSize - 1, fontWeight: 'bold', fontFamily: `${bodyFont}, sans-serif` }}>
-      {ctaText}
-    </a>
+    <a href={webUrl(ctaUrl)} target="_blank" rel="noreferrer" style={{ display: 'inline-block', padding: '10px 24px', backgroundColor: ctaBg, color: ctaTextColor, borderRadius: '6px', textDecoration: 'none', fontSize: fontSize - 1, fontWeight: 'bold', fontFamily: `${bodyFont}, sans-serif` }}>{ctaText}</a>
   ) : null;
 
   const socialRow = socials.length > 0 ? (
@@ -178,44 +194,46 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   ) : null;
 
   const horizontalDivider = <hr style={{ border: 0, borderTop: `${dividerThickness}px solid ${dividerColor}`, margin: 0 }} />;
-
   const disclaimerLine = showDisclaimer && disclaimerText ? (
     <p style={{ fontSize: disclaimerSize, color: '#999999', lineHeight: `${disclaimerSize + 4}px` }}>{disclaimerText}</p>
   ) : null;
 
-  /* ─── Block map ─── */
+  /* ─── Block map with wrappers ─── */
+  const w = (id: BlockId, el: JSX.Element | null) =>
+    el ? <BlockWrap key={id} id={id} active={isActive(id)} onClick={handleClick}>{el}</BlockWrap> : null;
+
   const blockMap: Record<BlockId, JSX.Element | null> = {
-    logo: logoImg,
-    name: nameLine,
-    company: companyLine,
-    tagline: taglineLine,
+    logo: w('logo', logoImg),
+    name: w('name', nameLine),
+    company: w('company', companyLine),
+    tagline: w('tagline', taglineLine),
     divider: horizontalDivider,
-    contacts: contactBlock,
-    socials: socialRow,
-    banner: bannerImg,
-    cta: ctaButton,
-    disclaimer: disclaimerLine,
+    contacts: w('contacts', contactBlock),
+    socials: w('socials', socialRow),
+    banner: w('banner', bannerImg),
+    cta: w('cta', ctaButton),
+    disclaimer: w('disclaimer', disclaimerLine),
   };
 
-  /* ─── Compact layout (special case) ─── */
+  /* ─── Compact layout ─── */
   if (sig.layout === 'Compact') {
     return (
       <div style={{ fontFamily: `${bodyFont}, sans-serif` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {logoImg}
+          {logoImg && <BlockWrap id="logo" active={isActive('logo')} onClick={handleClick}>{logoImg}</BlockWrap>}
           {showVerticalDivider && <div style={{ width: dividerThickness, height: 40, background: dividerColor }} />}
-          <div>
-            <span style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, fontWeight: nameBold ? 'bold' : 'normal', color: nameColor }}>
-              {sig.fullName}
-            </span>
-            {sig.jobTitle && <span style={{ fontSize: titleSize, color: titleColor, fontStyle: titleItalic ? 'italic' : 'normal' }}> {SEPARATOR_MAP[separator] || '|'} {sig.jobTitle}</span>}
-            {sig.company && <span style={{ fontSize: fontSize - 2, color: companyColor }}> {SEPARATOR_MAP[separator] || '|'} {sig.company}</span>}
-            {sig.emailAddress && <span style={{ fontSize: fontSize - 2 }}> | <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a></span>}
-            {sig.phone && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.phone}</span>}
-            {sig.website && <span style={{ fontSize: fontSize - 2 }}> | <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a></span>}
-          </div>
+          <BlockWrap id="name" active={isActive('name')} onClick={handleClick}>
+            <div>
+              <span style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, fontWeight: nameBold ? 'bold' : 'normal', color: nameColor }}>{sig.fullName}</span>
+              {sig.jobTitle && <span style={{ fontSize: titleSize, color: titleColor, fontStyle: titleItalic ? 'italic' : 'normal' }}> {SEPARATOR_MAP[separator] || '|'} {sig.jobTitle}</span>}
+              {sig.company && <span style={{ fontSize: fontSize - 2, color: companyColor }}> {SEPARATOR_MAP[separator] || '|'} {sig.company}</span>}
+              {sig.emailAddress && <span style={{ fontSize: fontSize - 2 }}> | <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a></span>}
+              {sig.phone && <span style={{ fontSize: fontSize - 2, color: textColor }}> | {sig.phone}</span>}
+              {sig.website && <span style={{ fontSize: fontSize - 2 }}> | <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a></span>}
+            </div>
+          </BlockWrap>
         </div>
-        {disclaimerLine && <div style={{ marginTop: spacing }}>{disclaimerLine}</div>}
+        {disclaimerLine && <div style={{ marginTop: spacing }}>{w('disclaimer', disclaimerLine)}</div>}
       </div>
     );
   }
