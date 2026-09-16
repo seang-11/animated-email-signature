@@ -177,6 +177,9 @@ export type EmailSignaturesRecordType = {
   companyLetterSpacing?: number;
   substackUrl?: string;
   youTubeUrl?: string;
+  accentBarColor?: string;
+  /** "Accent Bar Thickness". 0 decimal places, format: local (e.g. 1,000,000.50) */
+  accentBarThickness?: number;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -255,6 +258,8 @@ export type EmailSignaturesRecordInput = {
   companyLetterSpacing: string | number | null;
   substackUrl: string | null;
   youTubeUrl: string | null;
+  accentBarColor: string | null;
+  accentBarThickness: string | number | null;
 };
 
 export interface NotificationLink {

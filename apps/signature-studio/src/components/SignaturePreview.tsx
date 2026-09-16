@@ -47,6 +47,8 @@ function MaybeLink({ url, children }: { url?: string; children: React.ReactNode 
 
 const SEPARATOR_MAP: Record<string, string> = { pipe: '|', bullet: '·', dash: '—' };
 const LOGO_RADIUS: Record<string, string> = { square: '0', rounded: '8px', circle: '50%' };
+/* Blocks the accent bar runs alongside — one continuous bar, never one per block */
+const BAR_BLOCKS = new Set<BlockId>(['name', 'company', 'tagline']);
 
 /* ─── Clickable block wrapper ─── */
 function BlockWrap({ id, active, onClick, children }: { id: BlockId; active: boolean; onClick?: (id: BlockId) => void; children: React.ReactNode }) {
@@ -98,6 +100,8 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   const logoAlign = sig.logoAlignment || 'top';
   const contactLayout = sig.contactLayout || 'stacked';
   const showAccentBar = sig.showNameAccentBar !== false;
+  const accentBarColor = sig.accentBarColor || accent;
+  const accentBarThickness = sig.accentBarThickness ?? 3;
 
   const nameSize = sig.nameSize || fontSize + 4;
   const nameColor = sig.nameColor || accent;
@@ -163,21 +167,18 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   );
 
   const nameLine = (
-    <div style={{ display: 'flex', alignItems: 'stretch', gap: showAccentBar ? 10 : 0 }}>
-      {showAccentBar && <div style={{ width: dividerThickness + 2, background: accent, flexShrink: 0, borderRadius: 2 }} />}
-      <div style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, lineHeight: `${nameSize + 8}px`, color: nameColor }}>
-        <span style={{ fontWeight: nameBold ? 'bold' : 'normal' }}>{sig.fullName}</span>
-        {titleEl}
-      </div>
+    <div style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, lineHeight: `${nameSize + 8}px`, color: nameColor }}>
+      <span style={{ fontWeight: nameBold ? 'bold' : 'normal' }}>{sig.fullName}</span>
+      {titleEl}
     </div>
   );
 
   const companyLine = sig.company ? (
-    <p style={{ margin: `2px 0 0 ${showAccentBar ? 13 : 0}px`, fontSize: companySize, color: companyColor, fontWeight: companyBold ? 'bold' : 'normal', fontStyle: companyItalic ? 'italic' : 'normal', textTransform: companyUppercase ? 'uppercase' : 'none', letterSpacing: companyLS, lineHeight: `${companySize + 5}px` }}>{sig.company}</p>
+    <p style={{ margin: '2px 0 0 0', fontSize: companySize, color: companyColor, fontWeight: companyBold ? 'bold' : 'normal', fontStyle: companyItalic ? 'italic' : 'normal', textTransform: companyUppercase ? 'uppercase' : 'none', letterSpacing: companyLS, lineHeight: `${companySize + 5}px` }}>{sig.company}</p>
   ) : null;
 
   const taglineLine = sig.tagline ? (
-    <p style={{ fontSize: taglineSize, letterSpacing: taglineLS, color: taglineColor, textTransform: taglineUppercase ? 'uppercase' : 'none' as any, fontWeight: taglineBold ? 'bold' : 'normal', fontStyle: taglineItalic ? 'italic' : 'normal' }}>{sig.tagline}</p>
+    <p style={{ margin: 0, fontSize: taglineSize, letterSpacing: taglineLS, color: taglineColor, textTransform: taglineUppercase ? 'uppercase' : 'none' as any, fontWeight: taglineBold ? 'bold' : 'normal', fontStyle: taglineItalic ? 'italic' : 'normal' }}>{sig.tagline}</p>
   ) : null;
 
   const logoImg = logoUrl ? <MaybeLink url={logoLinkUrl}><img src={logoUrl} width={logoSize} alt="Logo" style={{ display: 'block', height: 'auto', borderRadius: logoRadius }} /></MaybeLink> : null;
@@ -242,11 +243,38 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   const zones = getZones(sig);
 
   function renderZone(blocks: BlockId[]) {
-    const els = blocks.map(id => ({ id, el: blockMap[id] })).filter(b => b.el);
-    if (els.length === 0) return null;
+    const items: { key: string; el: JSX.Element }[] = [];
+    let i = 0;
+    while (i < blocks.length) {
+      if (showAccentBar && BAR_BLOCKS.has(blocks[i])) {
+        const run: BlockId[] = [];
+        while (i < blocks.length && BAR_BLOCKS.has(blocks[i])) {
+          if (blockMap[blocks[i]]) run.push(blocks[i]);
+          i++;
+        }
+        if (run.length > 0) {
+          items.push({
+            key: `bar-${run.join('-')}`,
+            el: (
+              <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
+                <div style={{ width: accentBarThickness, background: accentBarColor, flexShrink: 0, borderRadius: 2 }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                  {run.map(id => <div key={id}>{blockMap[id]}</div>)}
+                </div>
+              </div>
+            ),
+          });
+        }
+        continue;
+      }
+      const el = blockMap[blocks[i]];
+      if (el) items.push({ key: blocks[i], el });
+      i++;
+    }
+    if (items.length === 0) return null;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: spacing }}>
-        {els.map(({ id, el }) => <div key={id}>{el}</div>)}
+        {items.map(({ key, el }) => <div key={key}>{el}</div>)}
       </div>
     );
   }

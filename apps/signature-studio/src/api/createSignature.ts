@@ -58,6 +58,8 @@ export default createEndpoint({
       logoAlignment: 'top',
       contactLayout: 'stacked',
       showNameAccentBar: true,
+      accentBarColor: '',
+      accentBarThickness: 3,
       // Name & title typography
       nameSize: 0,
       nameColor: '',

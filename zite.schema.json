@@ -881,6 +881,27 @@
             "type": "url",
             "template": {}
           }
+        },
+        {
+          "id": "fd9u6R8VjU1",
+          "sdkName": "accentBarColor",
+          "definition": {
+            "name": "Accent Bar Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f1iYwJAk7gj",
+          "sdkName": "accentBarThickness",
+          "definition": {
+            "name": "Accent Bar Thickness",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 0
+            }
+          }
         }
       ]
     }

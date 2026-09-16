@@ -156,6 +156,7 @@ const DEFAULTS: Record<string, any> = {
   companySize: 13, companyColor: '', companyBold: false, companyItalic: false, companyUppercase: false, companyLetterSpacing: 0,
   socialIconSize: 24, contactIconStyle: 'dark_mode_safe',
   blockSpacing: 8, logoAlignment: 'top', contactLayout: 'stacked', showNameAccentBar: true,
+  accentBarColor: '', accentBarThickness: 3,
   nameSize: 0, nameColor: '', nameBold: true, jobTitleSize: 0, jobTitleColor: '', jobTitleItalic: false,
   nameTitleSeparator: 'pipe', logoShape: 'square', dividerColor: '#dddddd', dividerThickness: 1,
   showCta: false, ctaBackgroundColor: '', ctaTextColor: '#ffffff', showDisclaimer: false, disclaimerSize: 10,
@@ -236,6 +237,13 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
               <ToggleRow label="Bold name" checked={sig.nameBold !== false} onChange={v => updateField('nameBold', v)} />
               <ToggleRow label="Italic title" checked={sig.jobTitleItalic ?? false} onChange={v => updateField('jobTitleItalic', v)} />
               <ToggleRow label="Accent bar" checked={sig.showNameAccentBar !== false} onChange={v => updateField('showNameAccentBar', v)} />
+              {sig.showNameAccentBar !== false && (
+                <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-3">
+                  <p className="text-[11px] text-muted-foreground">One bar runs alongside the name, company and tagline together.</p>
+                  <div><Label className="mb-1 block text-xs text-muted-foreground">Bar color</Label><ColorPicker value={sig.accentBarColor || ''} onChange={v => updateField('accentBarColor', v)} placeholder="Accent" /></div>
+                  <SliderRow label="Bar width" value={sig.accentBarThickness ?? 3} min={1} max={10} step={1} onChange={v => updateField('accentBarThickness', v)} />
+                </div>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -452,9 +460,10 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
             <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
             <SliderRow label="Block spacing" value={sig.blockSpacing ?? 8} min={2} max={20} step={1} onChange={v => updateField('blockSpacing', v)} />
           </div>
-          <div><Label className="mb-1 block text-xs text-muted-foreground">Divider color</Label><ColorPicker value={sig.dividerColor || '#dddddd'} onChange={v => updateField('dividerColor', v)} /></div>
-          <SliderRow label="Divider thickness" value={sig.dividerThickness ?? 1} min={1} max={4} step={1} onChange={v => updateField('dividerThickness', v)} />
-          <ToggleRow label="Vertical bar between columns" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
+          <div><Label className="mb-1 block text-xs text-muted-foreground">Divider line color</Label><ColorPicker value={sig.dividerColor || '#dddddd'} onChange={v => updateField('dividerColor', v)} /></div>
+          <SliderRow label="Divider line thickness" value={sig.dividerThickness ?? 1} min={1} max={4} step={1} onChange={v => updateField('dividerThickness', v)} />
+          <ToggleRow label="Divider between logo and text columns" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
+          <p className="text-[11px] text-muted-foreground">The bar next to your name is set in the Name &amp; Title block.</p>
         </div>
       </SectionCard>
 

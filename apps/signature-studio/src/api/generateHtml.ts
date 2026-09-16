@@ -58,6 +58,8 @@ export default createEndpoint({
     const logoAlign = s.logoAlignment || 'top';
     const contactLayout = s.contactLayout || 'stacked';
     const showAccentBar = s.showNameAccentBar !== false;
+    const accentBarColor = s.accentBarColor || accent;
+    const accentBarThickness = s.accentBarThickness ?? 3;
 
     const nameSize = s.nameSize || fontSize + 4;
     const nameColor = s.nameColor || accent;
@@ -156,11 +158,11 @@ export default createEndpoint({
         : `<span style="color:${dividerColor};font-weight:normal;padding:0 7px;">${SEPARATOR_MAP[separator] || '|'}</span><span style="color:${titleColor};font-weight:normal;font-size:${titleSize}px;${titleItalic ? 'font-style:italic;' : ''}">${s.jobTitle}</span>`
     ) : '';
 
-    const nameLineHtml = `<table cellpadding="0" cellspacing="0" border="0"><tr>${showAccentBar ? `<td width="${dividerThickness + 2}" style="width:${dividerThickness + 2}px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}<td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}</span>${titleHtml}</td></tr></table>`;
+    const nameLineHtml = `<div style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}</span>${titleHtml}</div>`;
 
     /* ─── Company line ─── */
     const companyLineHtml = s.company
-      ? `<p style="margin:2px 0 0 ${showAccentBar ? 13 : 0}px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};${companyItalic ? 'font-style:italic;' : ''}${companyUppercase ? 'text-transform:uppercase;' : ''}${companyLS ? `letter-spacing:${companyLS}px;` : ''}line-height:${companySize + 5}px;">${s.company}</p>`
+      ? `<p style="margin:2px 0 0 0;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};${companyItalic ? 'font-style:italic;' : ''}${companyUppercase ? 'text-transform:uppercase;' : ''}${companyLS ? `letter-spacing:${companyLS}px;` : ''}line-height:${companySize + 5}px;">${s.company}</p>`
       : '';
 
     /* ─── Tagline ─── */
@@ -198,10 +200,34 @@ export default createEndpoint({
     /* ─── Zone-based rendering ─── */
     const zones = getZones(s);
 
-    function renderZoneHtml(blocks: BlockId[]): string {
-      const items = blocks.map(id => blockMap[id]).filter(Boolean);
-      if (items.length === 0) return '';
+    const BAR_BLOCKS = new Set<BlockId>(['name', 'company', 'tagline']);
+
+    function stack(items: string[]): string {
       return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${items.map((html, i) => `<tr><td${i < items.length - 1 ? ` style="padding-bottom:${spacing}px;"` : ''}>${html}</td></tr>`).join('')}</table>`;
+    }
+
+    function renderZoneHtml(blocks: BlockId[]): string {
+      const items: string[] = [];
+      let i = 0;
+      while (i < blocks.length) {
+        if (showAccentBar && BAR_BLOCKS.has(blocks[i])) {
+          const run: string[] = [];
+          while (i < blocks.length && BAR_BLOCKS.has(blocks[i])) {
+            if (blockMap[blocks[i]]) run.push(blockMap[blocks[i]]);
+            i++;
+          }
+          if (run.length > 0) {
+            // One continuous bar alongside the whole name/company/tagline group
+            const inner = run.map((html, idx) => `<tr><td${idx > 0 ? ' style="padding-top:2px;"' : ''}>${html}</td></tr>`).join('');
+            items.push(`<table cellpadding="0" cellspacing="0" border="0"><tr><td width="${accentBarThickness}" style="width:${accentBarThickness}px;background:${accentBarColor};font-size:1px;line-height:1px;">&nbsp;</td><td style="padding-left:10px;"><table cellpadding="0" cellspacing="0" border="0">${inner}</table></td></tr></table>`);
+          }
+          continue;
+        }
+        if (blockMap[blocks[i]]) items.push(blockMap[blocks[i]]);
+        i++;
+      }
+      if (items.length === 0) return '';
+      return stack(items);
     }
 
     const leftHtml = renderZoneHtml(zones.left);
