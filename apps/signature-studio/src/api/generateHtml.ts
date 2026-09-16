@@ -62,10 +62,12 @@ export default createEndpoint({
     const companyLS = s.companyLetterSpacing ?? 0;
 
     const socialIconSize = s.socialIconSize || 24;
-    const contactIconStyle = s.contactIconStyle || 'filled';
-    const showContactIcons = contactIconStyle !== 'none';    const isDarkSafe = contactIconStyle === 'dark_mode_safe';
-    const logoAlign = s.logoAlignment || 'top';
-    const contactLayout = s.contactLayout || 'stacked';
+    const norm = (v: any, fallback: string) => (typeof v === 'string' && v.trim() ? v.trim().toLowerCase().replace(/\s+/g, '_') : fallback);
+    const contactIconStyle = norm(s.contactIconStyle, 'filled');
+    const showContactIcons = contactIconStyle !== 'none';
+    const isDarkSafe = contactIconStyle === 'dark_mode_safe';
+    const logoAlign = norm(s.logoAlignment, 'top');
+    const contactLayout = norm(s.contactLayout, 'stacked');
     const showAccentBar = s.showNameAccentBar !== false;
     const accentBarColor = s.accentBarColor || accent;
     const accentBarThickness = s.accentBarThickness ?? 3;
@@ -76,8 +78,8 @@ export default createEndpoint({
     const titleSize = s.jobTitleSize || fontSize;
     const titleColor = s.jobTitleColor || textColor;
     const titleItalic = s.jobTitleItalic ?? false;
-    const separator = s.nameTitleSeparator || 'pipe';
-    const logoShape = (s.logoShape || 'square').toLowerCase();
+    const separator = norm(s.nameTitleSeparator, 'pipe');
+    const logoShape = norm(s.logoShape, 'square');
     const logoLinkUrl = s.logoLinkUrl || '';
     const dividerColor = s.dividerColor || '#dddddd';
     const dividerThickness = s.dividerThickness ?? 1;
