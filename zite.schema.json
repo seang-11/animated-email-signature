@@ -366,6 +366,11 @@
                   "value": "anST",
                   "label": "Under banner",
                   "color": "blue"
+                },
+                {
+                  "value": "kXUe",
+                  "label": "under_details",
+                  "color": "gray"
                 }
               ],
               "disableColors": false
@@ -412,6 +417,11 @@
                   "value": "cpDV",
                   "label": "None",
                   "color": "gray"
+                },
+                {
+                  "value": "jTVi",
+                  "label": "dark_mode_safe",
+                  "color": "red"
                 }
               ],
               "disableColors": false

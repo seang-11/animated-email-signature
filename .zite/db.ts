@@ -126,10 +126,10 @@ export type EmailSignaturesRecordType = {
   companySize?: number;
   companyColor?: string;
   companyBold?: boolean;
-  socialPosition?: "Under details" | "Right column" | "Under banner" | string;
+  socialPosition?: "Under details" | "Right column" | "Under banner" | "under_details" | string;
   /** "Social Icon Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   socialIconSize?: number;
-  contactIconStyle?: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | string;
+  contactIconStyle?: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | "dark_mode_safe" | string;
   showCompany?: boolean;
   showTagline?: boolean;
   showSocials?: boolean;
@@ -216,9 +216,9 @@ export type EmailSignaturesRecordInput = {
   companySize: string | number | null;
   companyColor: string | null;
   companyBold: string | boolean | null;
-  socialPosition: "Under details" | "Right column" | "Under banner" | string | null;
+  socialPosition: "Under details" | "Right column" | "Under banner" | "under_details" | string | null;
   socialIconSize: string | number | null;
-  contactIconStyle: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | string | null;
+  contactIconStyle: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | "dark_mode_safe" | string | null;
   showCompany: string | boolean | null;
   showTagline: string | boolean | null;
   showSocials: string | boolean | null;
