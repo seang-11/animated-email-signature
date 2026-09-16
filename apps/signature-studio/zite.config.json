@@ -10,5 +10,11 @@
       "googleSignIn": false,
       "sso": false
     }
+  },
+  "seoSettings": {
+    "title": "",
+    "description": "",
+    "thumbnailUrl": "",
+    "faviconUrl": "https://images.fillout.com/orgid-446582/flowpublicid-dned86lnbt/widgetid-default/7B5St2JzFkAGksvHMjaQf5/NewBetterSize-AnimatedLogo3333.gif"
   }
 }
