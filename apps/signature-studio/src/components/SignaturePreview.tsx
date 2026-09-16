@@ -194,7 +194,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
     </div>
   ) : null;
 
-  const horizontalDivider = <hr style={{ border: 0, borderTop: `${dividerThickness}px solid ${dividerColor}`, margin: 0 }} />;
   const disclaimerLine = showDisclaimer && disclaimerText ? (
     <p style={{ fontSize: disclaimerSize, color: '#999999', lineHeight: `${disclaimerSize + 4}px` }}>{disclaimerText}</p>
   ) : null;
@@ -208,7 +207,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
     name: w('name', nameLine),
     company: w('company', companyLine),
     tagline: w('tagline', taglineLine),
-    divider: horizontalDivider,
     contacts: w('contacts', contactBlock),
     socials: w('socials', socialRow),
     banner: w('banner', bannerImg),

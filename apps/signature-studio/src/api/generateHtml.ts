@@ -2,17 +2,26 @@ import { z } from 'zod';
 import { createEndpoint } from 'zitejs/backend';
 import { zite } from 'zitejs/db';
 
-type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer' | 'divider';
+type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer';
 type ZonesConfig = Record<'left' | 'main' | 'right' | 'bottom', BlockId[]>;
 
+const VALID_BLOCKS = new Set<string>(['logo', 'name', 'company', 'tagline', 'contacts', 'socials', 'banner', 'cta', 'disclaimer']);
+
 const PRESET_ZONES: Record<string, ZonesConfig> = {
-  'Logo Left': { left: ['logo'], main: ['name', 'company', 'divider', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: ['disclaimer'] },
-  Stacked: { left: [], main: ['logo', 'name', 'company', 'divider', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: ['disclaimer'] },
+  'Logo Left': { left: ['logo'], main: ['name', 'company', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: ['disclaimer'] },
+  Stacked: { left: [], main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: ['disclaimer'] },
   Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], right: [], bottom: ['disclaimer'] },
 };
 
 function getZones(s: any): ZonesConfig {
-  if (s.layoutZones) { try { return JSON.parse(s.layoutZones); } catch { /* fall through */ } }
+  if (s.layoutZones) {
+    try {
+      const parsed = JSON.parse(s.layoutZones) as ZonesConfig;
+      const out = {} as ZonesConfig;
+      for (const z of ['left', 'main', 'right', 'bottom'] as const) out[z] = (parsed[z] || []).filter(b => VALID_BLOCKS.has(b));
+      return out;
+    } catch { /* fall through */ }
+  }
   return PRESET_ZONES[s.layout || 'Logo Left'] || PRESET_ZONES['Logo Left'];
 }
 
@@ -180,12 +189,10 @@ export default createEndpoint({
       ? `<p style="margin:0;font-size:${disclaimerSize}px;color:#999999;line-height:${disclaimerSize + 4}px;">${disclaimerText}</p>`
       : '';
 
-    const dividerBlock = `<hr style="border:0;border-top:${dividerThickness}px solid ${dividerColor};margin:0;" />`;
-
     /* ─── Block map ─── */
     const blockMap: Record<BlockId, string> = {
       logo: logoHtml, name: nameLineHtml, company: companyLineHtml, tagline: taglineHtml,
-      divider: dividerBlock, contacts: contactTable, socials: socialBlock, banner: bannerHtml,
+      contacts: contactTable, socials: socialBlock, banner: bannerHtml,
       cta: ctaBlock, disclaimer: disclaimerBlock,
     };
 

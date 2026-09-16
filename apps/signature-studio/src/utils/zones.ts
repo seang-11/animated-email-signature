@@ -1,4 +1,4 @@
-export type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer' | 'divider';
+export type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer';
 export type ZoneId = 'left' | 'main' | 'right' | 'bottom';
 export type ZonesConfig = Record<ZoneId, BlockId[]>;
 
@@ -15,7 +15,6 @@ export const ALL_BLOCKS: { id: BlockId; label: string }[] = [
   { id: 'name', label: 'Name & Title' },
   { id: 'company', label: 'Company' },
   { id: 'tagline', label: 'Tagline' },
-  { id: 'divider', label: 'Divider' },
   { id: 'contacts', label: 'Contacts' },
   { id: 'socials', label: 'Social Icons' },
   { id: 'banner', label: 'Banner' },
@@ -23,16 +22,18 @@ export const ALL_BLOCKS: { id: BlockId; label: string }[] = [
   { id: 'disclaimer', label: 'Disclaimer' },
 ];
 
+const VALID_BLOCKS = new Set<string>(ALL_BLOCKS.map(b => b.id));
+
 export const PRESET_ZONES: Record<string, ZonesConfig> = {
   'Logo Left': {
     left: ['logo'],
-    main: ['name', 'company', 'divider', 'contacts', 'cta', 'socials'],
+    main: ['name', 'company', 'contacts', 'cta', 'socials'],
     right: ['banner', 'tagline'],
     bottom: ['disclaimer'],
   },
   Stacked: {
     left: [],
-    main: ['logo', 'name', 'company', 'divider', 'contacts', 'cta', 'tagline', 'banner', 'socials'],
+    main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'],
     right: [],
     bottom: ['disclaimer'],
   },
@@ -44,10 +45,17 @@ export const PRESET_ZONES: Record<string, ZonesConfig> = {
   },
 };
 
+/** Drops blocks that no longer exist (e.g. the old horizontal "divider" block). */
+function clean(zones: ZonesConfig): ZonesConfig {
+  const out = {} as ZonesConfig;
+  for (const z of ZONE_IDS) out[z] = (zones[z] || []).filter(b => VALID_BLOCKS.has(b));
+  return out;
+}
+
 export function getZones(sig: Record<string, any>): ZonesConfig {
   if (sig.layoutZones) {
     try {
-      return JSON.parse(sig.layoutZones);
+      return clean(JSON.parse(sig.layoutZones));
     } catch {
       /* fall through */
     }

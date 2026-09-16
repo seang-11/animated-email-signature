@@ -14,7 +14,7 @@ export const TEMPLATES: TemplateDesign[] = [
   {
     key: 'classic',
     label: 'The Classic',
-    desc: 'Logo, divider, contact details',
+    desc: 'Logo left, contact details',
     icon: FileText,
     overrides: {
       layout: 'Logo Left',

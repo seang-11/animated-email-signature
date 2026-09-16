@@ -460,10 +460,10 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
             <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
             <SliderRow label="Block spacing" value={sig.blockSpacing ?? 8} min={2} max={20} step={1} onChange={v => updateField('blockSpacing', v)} />
           </div>
-          <div><Label className="mb-1 block text-xs text-muted-foreground">Divider line color</Label><ColorPicker value={sig.dividerColor || '#dddddd'} onChange={v => updateField('dividerColor', v)} /></div>
-          <SliderRow label="Divider line thickness" value={sig.dividerThickness ?? 1} min={1} max={4} step={1} onChange={v => updateField('dividerThickness', v)} />
+          <div><Label className="mb-1 block text-xs text-muted-foreground">Column divider &amp; separator color</Label><ColorPicker value={sig.dividerColor || '#dddddd'} onChange={v => updateField('dividerColor', v)} /></div>
+          <SliderRow label="Column divider thickness" value={sig.dividerThickness ?? 1} min={1} max={4} step={1} onChange={v => updateField('dividerThickness', v)} />
           <ToggleRow label="Divider between logo and text columns" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
-          <p className="text-[11px] text-muted-foreground">The bar next to your name is set in the Name &amp; Title block.</p>
+          <p className="text-[11px] text-muted-foreground">This color also sets the separator between your name and job title. The bar next to your name is set in the Name &amp; Title block.</p>
         </div>
       </SectionCard>
 
