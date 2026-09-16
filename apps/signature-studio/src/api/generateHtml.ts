@@ -149,7 +149,7 @@ export default createEndpoint({
 
     let contactTable = '';
     if (contactRows.length > 0) {
-      if (contactLayout === 'two_column' && contactRows.length >= 3) {
+      if (contactLayout === 'two_column' && contactRows.length >= 2) {
         const mid = Math.ceil(contactRows.length / 2);
         contactTable = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;"><tr><td style="vertical-align:top;padding-right:20px;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(0, mid).join('')}</table></td><td style="vertical-align:top;"><table cellpadding="0" cellspacing="0" border="0">${contactRows.slice(mid).join('')}</table></td></tr></table>`;
       } else {

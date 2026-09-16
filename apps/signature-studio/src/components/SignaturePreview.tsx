@@ -143,7 +143,7 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   if (sig.website) contactLines.push({ icon: contactIcon('domain', accent, contactIconStyle), content: <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a> });
 
   const contactBlock = contactLines.length > 0 ? (() => {
-    if (contactLayout === 'two_column' && contactLines.length >= 3) {
+    if (contactLayout === 'two_column' && contactLines.length >= 2) {
       const mid = Math.ceil(contactLines.length / 2);
       return (
         <div style={{ display: 'flex', gap: 20 }}>
