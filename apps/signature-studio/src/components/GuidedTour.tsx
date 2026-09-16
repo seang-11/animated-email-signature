@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, X, Sparkles } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 
 const TOUR_KEY = 'sig-studio-tour-done';
+const EDGE_MARGIN = 16;
 
 interface Step {
   emoji: string;
@@ -93,29 +94,108 @@ export function useTour() {
   return { active, step, setStep, start, dismiss, total: STEPS.length };
 }
 
-/** Calculate card position near the highlighted element */
-function useCardPosition(active: boolean, step: number) {
-  const [pos, setPos] = useState<{ top?: number; bottom?: number; left: number } | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+/* ------------------------------------------------------------------ */
+/*  Robust card positioning with viewport clamping & scroll tracking  */
+/* ------------------------------------------------------------------ */
 
-  useEffect(() => {
-    if (!active) { setPos(null); return; }
+type CardPos = { top: number; left: number };
+
+function computePosition(
+  elRect: DOMRect,
+  cardW: number,
+  cardH: number,
+  viewW: number,
+  viewH: number,
+  preferAbove: boolean,
+): CardPos {
+  const gap = 12;
+
+  // Horizontal: center on element, clamp to viewport
+  let left = elRect.left + elRect.width / 2 - cardW / 2;
+  left = Math.max(EDGE_MARGIN, Math.min(left, viewW - cardW - EDGE_MARGIN));
+
+  const spaceBelow = viewH - elRect.bottom - gap;
+  const spaceAbove = elRect.top - gap;
+
+  // Try preferred side first, then the other, then fixed center
+  if (preferAbove && spaceAbove >= cardH + EDGE_MARGIN) {
+    return { top: elRect.top - gap - cardH, left };
+  }
+  if (!preferAbove && spaceBelow >= cardH + EDGE_MARGIN) {
+    return { top: elRect.bottom + gap, left };
+  }
+  // Try the opposite side
+  if (!preferAbove && spaceAbove >= cardH + EDGE_MARGIN) {
+    return { top: elRect.top - gap - cardH, left };
+  }
+  if (preferAbove && spaceBelow >= cardH + EDGE_MARGIN) {
+    return { top: elRect.bottom + gap, left };
+  }
+
+  // Neither side fits — place fixed at center-bottom, guaranteed on-screen
+  return {
+    top: Math.max(EDGE_MARGIN, viewH - cardH - EDGE_MARGIN),
+    left: Math.max(EDGE_MARGIN, (viewW - cardW) / 2),
+  };
+}
+
+function useCardPosition(active: boolean, step: number) {
+  const [pos, setPos] = useState<CardPos | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  // Track whether we've done the initial measurement after scroll settles
+  const scrollDoneRef = useRef(false);
+
+  const measure = useCallback(() => {
     const s = STEPS[step];
-    if (!s?.selector) { setPos(null); return; }
+    if (!active || !s?.selector) { setPos(null); return; }
     const el = document.querySelector(s.selector);
     if (!el) { setPos(null); return; }
 
     const rect = el.getBoundingClientRect();
+    const cardEl = cardRef.current;
+    const cardW = cardEl ? cardEl.offsetWidth : Math.min(window.innerWidth * 0.9, 448);
+    const cardH = cardEl ? cardEl.offsetHeight : 280;
+    const viewW = window.innerWidth;
     const viewH = window.innerHeight;
-    const cardH = 280; // rough estimate
-    const gap = 12;
 
-    if (s.placement === 'above' || (rect.bottom + cardH + gap > viewH && rect.top - cardH - gap > 0)) {
-      setPos({ bottom: viewH - rect.top + gap, left: Math.max(16, rect.left) });
-    } else {
-      setPos({ top: rect.bottom + gap, left: Math.max(16, rect.left) });
-    }
+    const preferAbove = s.placement === 'above';
+    setPos(computePosition(rect, cardW, cardH, viewW, viewH, preferAbove));
   }, [active, step]);
+
+  // Scroll the target into view, then measure after scroll settles
+  useEffect(() => {
+    if (!active) { setPos(null); return; }
+    const s = STEPS[step];
+    if (!s?.selector) { setPos(null); return; }
+    scrollDoneRef.current = false;
+
+    // Initial rough measure so card appears immediately (will refine)
+    measure();
+
+    // Wait for scrollIntoView to finish (~400ms is generous for smooth scroll)
+    const t = setTimeout(() => {
+      scrollDoneRef.current = true;
+      measure();
+    }, 420);
+
+    return () => clearTimeout(t);
+  }, [active, step, measure]);
+
+  // Re-measure on actual card render (height now known) and on scroll/resize
+  useLayoutEffect(() => {
+    if (!active) return;
+    // Once the card mounts / re-renders, re-measure with real height
+    const raf = requestAnimationFrame(measure);
+
+    const handler = () => measure();
+    window.addEventListener('scroll', handler, true); // capture so we catch inner scrolls
+    window.addEventListener('resize', handler);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', handler, true);
+      window.removeEventListener('resize', handler);
+    };
+  }, [active, step, measure]);
 
   return { pos, cardRef };
 }
@@ -139,7 +219,7 @@ export default function GuidedTour({ active, step, setStep, dismiss, total }: {
     return () => el.classList.remove('tour-highlight');
   }, [active, step]);
 
-  const { pos } = useCardPosition(active, step);
+  const { pos, cardRef } = useCardPosition(active, step);
   const s = STEPS[step];
   if (!s) return null;
 
@@ -149,19 +229,8 @@ export default function GuidedTour({ active, step, setStep, dismiss, total }: {
 
   // Card positioning style
   const cardStyle: React.CSSProperties = hasSelector && pos
-    ? {
-        position: 'fixed',
-        ...(pos.top != null ? { top: pos.top } : {}),
-        ...(pos.bottom != null ? { bottom: pos.bottom } : {}),
-        left: '50%',
-        transform: 'translateX(-50%)',
-      }
-    : {
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      };
+    ? { position: 'fixed', top: pos.top, left: pos.left }
+    : { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
 
   return (
     <AnimatePresence>
@@ -178,6 +247,7 @@ export default function GuidedTour({ active, step, setStep, dismiss, total }: {
           {/* Card */}
           <motion.div
             key={step}
+            ref={cardRef}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
