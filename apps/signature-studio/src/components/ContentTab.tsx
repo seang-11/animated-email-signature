@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { Input } from '@project/components/ui/input';
 import { Label } from '@project/components/ui/label';
-import { Upload, Image as ImageIcon, X, User, ImagePlus, Share2 } from 'lucide-react';
+import { Textarea } from '@project/components/ui/textarea';
+import { Upload, Image as ImageIcon, X, User, ImagePlus, Share2, Link2, MousePointerClick, FileText } from 'lucide-react';
 import { useUpload } from 'zitejs/upload';
 import { toast } from 'sonner';
 import type { SigData } from './SignatureEditor';
@@ -20,11 +21,11 @@ function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType;
   );
 }
 
-function Field({ label, value, field, updateField }: { label: string; value: string; field: string; updateField: (k: string, v: any) => void }) {
+function Field({ label, value, field, updateField, placeholder }: { label: string; value: string; field: string; updateField: (k: string, v: any) => void; placeholder?: string }) {
   return (
     <div>
       <Label className="text-xs text-muted-foreground">{label}</Label>
-      <Input value={value || ''} onChange={e => updateField(field, e.target.value)} className="mt-1" />
+      <Input value={value || ''} onChange={e => updateField(field, e.target.value)} placeholder={placeholder} className="mt-1" />
     </div>
   );
 }
@@ -42,7 +43,7 @@ function ImageUploader({ label, field, currentUrl, updateField }: { label: strin
     }
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > 20) {
-      toast.error(`File is ${sizeMB.toFixed(1)} MB — max is 20 MB. Resize it first (signature logos display at ~150px, so a smaller export works great).`);
+      toast.error(`File is ${sizeMB.toFixed(1)} MB — max is 20 MB.`);
       return;
     }
     try {
@@ -105,6 +106,7 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
       <SectionCard icon={User} title="Identity">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Full name" value={sig.fullName} field="fullName" updateField={updateField} />
+          <Field label="Pronouns" value={sig.pronouns} field="pronouns" updateField={updateField} placeholder="e.g. he/him, she/her" />
           <Field label="Job title" value={sig.jobTitle} field="jobTitle" updateField={updateField} />
           <Field label="Company" value={sig.company} field="company" updateField={updateField} />
           <Field label="Tagline" value={sig.tagline} field="tagline" updateField={updateField} />
@@ -125,6 +127,22 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
         </div>
       </SectionCard>
 
+      <SectionCard icon={Link2} title="Links">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Logo link URL" value={sig.logoLinkUrl} field="logoLinkUrl" updateField={updateField} placeholder="Makes logo clickable" />
+          <Field label="Banner link URL" value={sig.bannerLinkUrl} field="bannerLinkUrl" updateField={updateField} placeholder="Makes banner clickable" />
+        </div>
+      </SectionCard>
+
+      <SectionCard icon={MousePointerClick} title="Call to Action">
+        <p className="mb-3 text-xs text-muted-foreground">Add a button below your contact details — great for booking links, offers, or your latest content.</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Button text" value={sig.ctaText} field="ctaText" updateField={updateField} placeholder="e.g. Book a Meeting" />
+          <Field label="Button URL" value={sig.ctaUrl} field="ctaUrl" updateField={updateField} placeholder="https://calendly.com/..." />
+        </div>
+        <p className="mt-2 text-[10px] text-muted-foreground/60">Toggle the button on/off and set its colors in the Design tab.</p>
+      </SectionCard>
+
       <SectionCard icon={Share2} title="Social Links">
         <div className="space-y-2">
           {SOCIAL_FIELDS.map(s => (
@@ -139,6 +157,18 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
             </div>
           ))}
         </div>
+      </SectionCard>
+
+      <SectionCard icon={FileText} title="Disclaimer">
+        <p className="mb-3 text-xs text-muted-foreground">Small text at the bottom of your signature — confidentiality notices, legal disclaimers, etc.</p>
+        <Textarea
+          value={sig.disclaimerText || ''}
+          onChange={e => updateField('disclaimerText', e.target.value)}
+          placeholder="This email and any attachments are confidential..."
+          rows={3}
+          className="text-sm"
+        />
+        <p className="mt-2 text-[10px] text-muted-foreground/60">Toggle visibility and set the font size in the Design tab.</p>
       </SectionCard>
     </div>
   );

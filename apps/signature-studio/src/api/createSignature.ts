@@ -59,6 +59,32 @@ export default createEndpoint({
       logoAlignment: 'top',
       contactLayout: 'stacked',
       showNameAccentBar: true,
+      // Name & title typography
+      nameSize: 0,
+      nameColor: '',
+      nameBold: true,
+      jobTitleSize: 0,
+      jobTitleColor: '',
+      jobTitleItalic: false,
+      nameTitleSeparator: 'pipe',
+      pronouns: '',
+      // Logo & banner
+      logoShape: 'square',
+      logoLinkUrl: '',
+      bannerLinkUrl: '',
+      // Dividers
+      dividerColor: '#dddddd',
+      dividerThickness: 1,
+      // CTA
+      showCta: false,
+      ctaText: '',
+      ctaUrl: '',
+      ctaBackgroundColor: '',
+      ctaTextColor: '#ffffff',
+      // Disclaimer
+      showDisclaimer: false,
+      disclaimerText: '',
+      disclaimerSize: 10,
       isDefault: false,
       template: input.template || '',
     };

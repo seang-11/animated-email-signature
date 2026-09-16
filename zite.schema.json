@@ -554,6 +554,254 @@
               "defaultValue": true
             }
           }
+        },
+        {
+          "id": "foMQLR52AJC",
+          "sdkName": "nameSize",
+          "definition": {
+            "name": "Name Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fhZQZrDnatf",
+          "sdkName": "nameColor",
+          "definition": {
+            "name": "Name Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f5GzyWMAiQ9",
+          "sdkName": "nameBold",
+          "definition": {
+            "name": "Name Bold",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
+        },
+        {
+          "id": "fqXryEfnUEo",
+          "sdkName": "jobTitleSize",
+          "definition": {
+            "name": "Job Title Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fuko3JDvaTm",
+          "sdkName": "jobTitleColor",
+          "definition": {
+            "name": "Job Title Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f4yXf5i2jKN",
+          "sdkName": "jobTitleItalic",
+          "definition": {
+            "name": "Job Title Italic",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "f216P5P6KUT",
+          "sdkName": "nameTitleSeparator",
+          "definition": {
+            "name": "Name Title Separator",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "mG75",
+                  "label": "Pipe",
+                  "color": "purple"
+                },
+                {
+                  "value": "m8Xf",
+                  "label": "Bullet",
+                  "color": "orange"
+                },
+                {
+                  "value": "v1fX",
+                  "label": "Dash",
+                  "color": "blue"
+                },
+                {
+                  "value": "qsyE",
+                  "label": "New Line",
+                  "color": "gray"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "fitFFpgbxYu",
+          "sdkName": "logoShape",
+          "definition": {
+            "name": "Logo Shape",
+            "type": "single_select",
+            "template": {
+              "options": [
+                {
+                  "value": "1X4E",
+                  "label": "Square",
+                  "color": "purple"
+                },
+                {
+                  "value": "5AM2",
+                  "label": "Rounded",
+                  "color": "orange"
+                },
+                {
+                  "value": "81F3",
+                  "label": "Circle",
+                  "color": "blue"
+                }
+              ],
+              "disableColors": false
+            }
+          }
+        },
+        {
+          "id": "f7zTSaXJtd3",
+          "sdkName": "logoLinkUrl",
+          "definition": {
+            "name": "Logo Link Url",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fiSjSveiCev",
+          "sdkName": "dividerColor",
+          "definition": {
+            "name": "Divider Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "faNP5NzZ9mv",
+          "sdkName": "dividerThickness",
+          "definition": {
+            "name": "Divider Thickness",
+            "type": "number",
+            "template": {
+              "defaultValue": 1,
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fpCqZBfd1nj",
+          "sdkName": "bannerLinkUrl",
+          "definition": {
+            "name": "Banner Link Url",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "ff3ce2GgbwQ",
+          "sdkName": "showCta",
+          "definition": {
+            "name": "Show Cta",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "ffBSLDsJzZa",
+          "sdkName": "ctaText",
+          "definition": {
+            "name": "Cta Text",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fvNEv1uFYBA",
+          "sdkName": "ctaUrl",
+          "definition": {
+            "name": "Cta Url",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fbCrvPzrjbE",
+          "sdkName": "ctaBackgroundColor",
+          "definition": {
+            "name": "Cta Background Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "f4QotsTmYWT",
+          "sdkName": "ctaTextColor",
+          "definition": {
+            "name": "Cta Text Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fes9CjCRevh",
+          "sdkName": "showDisclaimer",
+          "definition": {
+            "name": "Show Disclaimer",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "feULnevkKDe",
+          "sdkName": "disclaimerText",
+          "definition": {
+            "name": "Disclaimer Text",
+            "type": "long_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "fn1a7Rj5LMZ",
+          "sdkName": "disclaimerSize",
+          "definition": {
+            "name": "Disclaimer Size",
+            "type": "number",
+            "template": {
+              "defaultValue": 10,
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "f7FAhuNFvMd",
+          "sdkName": "pronouns",
+          "definition": {
+            "name": "Pronouns",
+            "type": "single_line_text",
+            "template": {}
+          }
         }
       ]
     }

@@ -141,6 +141,31 @@ export type EmailSignaturesRecordType = {
   logoAlignment?: "Top" | "Middle" | "Bottom" | string;
   contactLayout?: "Stacked" | "Two Column" | string;
   showNameAccentBar?: boolean;
+  /** "Name Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  nameSize?: number;
+  nameColor?: string;
+  nameBold?: boolean;
+  /** "Job Title Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  jobTitleSize?: number;
+  jobTitleColor?: string;
+  jobTitleItalic?: boolean;
+  nameTitleSeparator?: "Pipe" | "Bullet" | "Dash" | "New Line" | string;
+  logoShape?: "Square" | "Rounded" | "Circle" | string;
+  logoLinkUrl?: string;
+  dividerColor?: string;
+  /** "Divider Thickness". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  dividerThickness?: number;
+  bannerLinkUrl?: string;
+  showCta?: boolean;
+  ctaText?: string;
+  ctaUrl?: string;
+  ctaBackgroundColor?: string;
+  ctaTextColor?: string;
+  showDisclaimer?: boolean;
+  disclaimerText?: string;
+  /** "Disclaimer Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  disclaimerSize?: number;
+  pronouns?: string;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -190,6 +215,27 @@ export type EmailSignaturesRecordInput = {
   logoAlignment: "Top" | "Middle" | "Bottom" | string | null;
   contactLayout: "Stacked" | "Two Column" | string | null;
   showNameAccentBar: string | boolean | null;
+  nameSize: string | number | null;
+  nameColor: string | null;
+  nameBold: string | boolean | null;
+  jobTitleSize: string | number | null;
+  jobTitleColor: string | null;
+  jobTitleItalic: string | boolean | null;
+  nameTitleSeparator: "Pipe" | "Bullet" | "Dash" | "New Line" | string | null;
+  logoShape: "Square" | "Rounded" | "Circle" | string | null;
+  logoLinkUrl: string | null;
+  dividerColor: string | null;
+  dividerThickness: string | number | null;
+  bannerLinkUrl: string | null;
+  showCta: string | boolean | null;
+  ctaText: string | null;
+  ctaUrl: string | null;
+  ctaBackgroundColor: string | null;
+  ctaTextColor: string | null;
+  showDisclaimer: string | boolean | null;
+  disclaimerText: string | null;
+  disclaimerSize: string | number | null;
+  pronouns: string | null;
 };
 
 export interface NotificationLink {

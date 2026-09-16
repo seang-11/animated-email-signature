@@ -4,7 +4,7 @@ import { Slider } from '@project/components/ui/slider';
 import { Switch } from '@project/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@project/components/ui/select';
 import { Button } from '@project/components/ui/button';
-import { RotateCcw, LayoutGrid, Palette, Type, Maximize2, Space, Share2, Eye, SlidersHorizontal } from 'lucide-react';
+import { RotateCcw, LayoutGrid, Palette, Type, Maximize2, Space, Share2, Eye, Heading, Image, SeparatorHorizontal, MousePointerClick } from 'lucide-react';
 import type { SigData } from './SignatureEditor';
 
 function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
@@ -75,9 +75,31 @@ const DEFAULTS: Record<string, any> = {
   logoAlignment: 'top',
   contactLayout: 'stacked',
   showNameAccentBar: true,
+  // Name & title
+  nameSize: 0,
+  nameColor: '',
+  nameBold: true,
+  jobTitleSize: 0,
+  jobTitleColor: '',
+  jobTitleItalic: false,
+  nameTitleSeparator: 'pipe',
+  // Logo
+  logoShape: 'square',
+  // Dividers
+  dividerColor: '#dddddd',
+  dividerThickness: 1,
+  // CTA
+  showCta: false,
+  ctaBackgroundColor: '',
+  ctaTextColor: '#ffffff',
+  // Disclaimer
+  showDisclaimer: false,
+  disclaimerSize: 10,
 };
 
 export default function DesignTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
+  const fontSize = sig.baseTextSize || 14;
+
   const resetDefaults = () => {
     Object.entries(DEFAULTS).forEach(([k, v]) => updateField(k, v));
   };
@@ -122,6 +144,40 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
               </SelectContent>
             </Select>
           </div>
+        </div>
+      </SectionCard>
+
+      {/* Name & Title */}
+      <SectionCard icon={Heading} title="Name & Title">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <SliderRow label="Name size" value={sig.nameSize || fontSize + 4} min={12} max={28} step={1} onChange={v => updateField('nameSize', v)} />
+            <SliderRow label="Title size" value={sig.jobTitleSize || fontSize} min={10} max={22} step={1} onChange={v => updateField('jobTitleSize', v)} />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Name color</Label>
+              <Input value={sig.nameColor || ''} onChange={e => updateField('nameColor', e.target.value)} placeholder="Inherits accent" className="mt-1 w-28 font-mono text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Title color</Label>
+              <Input value={sig.jobTitleColor || ''} onChange={e => updateField('jobTitleColor', e.target.value)} placeholder="Inherits text" className="mt-1 w-28 font-mono text-sm" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Separator</Label>
+            <Select value={sig.nameTitleSeparator || 'pipe'} onValueChange={v => updateField('nameTitleSeparator', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pipe">Pipe  |</SelectItem>
+                <SelectItem value="bullet">Bullet  ·</SelectItem>
+                <SelectItem value="dash">Dash  —</SelectItem>
+                <SelectItem value="new_line">New line</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <ToggleRow label="Bold name" checked={sig.nameBold !== false} onChange={v => updateField('nameBold', v)} />
+          <ToggleRow label="Italic title" checked={sig.jobTitleItalic ?? false} onChange={v => updateField('jobTitleItalic', v)} />
         </div>
       </SectionCard>
 
@@ -175,13 +231,41 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
         </div>
       </SectionCard>
 
+      {/* Logo Style */}
+      <SectionCard icon={Image} title="Logo Style">
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground">Shape</Label>
+            <Select value={sig.logoShape || 'square'} onValueChange={v => updateField('logoShape', v)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="square">Square</SelectItem>
+                <SelectItem value="rounded">Rounded</SelectItem>
+                <SelectItem value="circle">Circle</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <SliderRow label="Logo size" value={sig.logoSize || 96} min={32} max={160} step={4} onChange={v => updateField('logoSize', v)} />
+          <SliderRow label="Banner size" value={sig.bannerSize || 180} min={100} max={400} step={10} onChange={v => updateField('bannerSize', v)} />
+        </div>
+      </SectionCard>
+
       {/* Sizing */}
       <SectionCard icon={Maximize2} title="Sizing">
         <div className="space-y-4">
-          <SliderRow label="Logo size" value={sig.logoSize || 96} min={32} max={160} step={4} onChange={v => updateField('logoSize', v)} />
-          <SliderRow label="Banner size" value={sig.bannerSize || 180} min={100} max={400} step={10} onChange={v => updateField('bannerSize', v)} />
           <SliderRow label="Base text size" value={sig.baseTextSize || 14} min={10} max={20} step={1} onChange={v => updateField('baseTextSize', v)} />
           <SliderRow label="Company text size" value={sig.companySize || 13} min={9} max={18} step={1} onChange={v => updateField('companySize', v)} />
+        </div>
+      </SectionCard>
+
+      {/* Dividers */}
+      <SectionCard icon={SeparatorHorizontal} title="Dividers">
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground">Color</Label>
+            <Input value={sig.dividerColor || '#dddddd'} onChange={e => updateField('dividerColor', e.target.value)} className="mt-1 w-28 font-mono text-sm" />
+          </div>
+          <SliderRow label="Thickness" value={sig.dividerThickness ?? 1} min={1} max={4} step={1} onChange={v => updateField('dividerThickness', v)} />
         </div>
       </SectionCard>
 
@@ -221,6 +305,25 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
         </div>
       </SectionCard>
 
+      {/* Call to Action */}
+      <SectionCard icon={MousePointerClick} title="Call to Action">
+        <div className="space-y-3">
+          <ToggleRow label="Show CTA button" checked={sig.showCta ?? false} onChange={v => updateField('showCta', v)} />
+          {sig.showCta && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <Label className="text-xs text-muted-foreground">Button background</Label>
+                <Input value={sig.ctaBackgroundColor || ''} onChange={e => updateField('ctaBackgroundColor', e.target.value)} placeholder="Inherits accent" className="mt-1 w-28 font-mono text-sm" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Button text color</Label>
+                <Input value={sig.ctaTextColor || '#ffffff'} onChange={e => updateField('ctaTextColor', e.target.value)} className="mt-1 w-28 font-mono text-sm" />
+              </div>
+            </div>
+          )}
+        </div>
+      </SectionCard>
+
       {/* Visibility */}
       <SectionCard icon={Eye} title="Visibility">
         <div className="space-y-2">
@@ -231,6 +334,10 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
           <ToggleRow label="Show social icons" checked={sig.showSocials !== false} onChange={v => updateField('showSocials', v)} />
           <ToggleRow label="Name accent bar" checked={sig.showNameAccentBar !== false} onChange={v => updateField('showNameAccentBar', v)} />
           <ToggleRow label="Vertical divider" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
+          <ToggleRow label="Show disclaimer" checked={sig.showDisclaimer ?? false} onChange={v => updateField('showDisclaimer', v)} />
+          {sig.showDisclaimer && (
+            <SliderRow label="Disclaimer size" value={sig.disclaimerSize || 10} min={8} max={14} step={1} onChange={v => updateField('disclaimerSize', v)} />
+          )}
         </div>
       </SectionCard>
 
