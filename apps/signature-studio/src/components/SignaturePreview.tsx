@@ -9,6 +9,8 @@ const SOCIAL_ICONS: Record<string, { src: string; label: string }> = {
   threadsUrl: { src: 'https://cdn-icons-png.flaticon.com/512/14079/14079772.png', label: 'Threads' },
   xUrl: { src: 'https://cdn-icons-png.flaticon.com/512/5968/5968830.png', label: 'X' },
   tikTokUrl: { src: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' },
+  youTubeUrl: { src: 'https://cdn-icons-png.flaticon.com/512/174/174883.png', label: 'YouTube' },
+  substackUrl: { src: 'https://img.icons8.com/color/96/substack.png', label: 'Substack' },
 };
 
 type ContactLine = { icon: string; content: JSX.Element };
@@ -70,7 +72,6 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
 
   const socialIconSize = sig.socialIconSize || 24;
   const contactIconStyle = sig.contactIconStyle || 'filled';
-  const showAddress = sig.showAddress !== false;
   const showContactIcons = contactIconStyle !== 'none';
   const isDarkSafe = contactIconStyle === 'dark_mode_safe';
   const logoAlign = sig.logoAlignment || 'top';
@@ -97,7 +98,6 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const showDisclaimer = sig.showDisclaimer ?? false;
   const disclaimerText = sig.disclaimerText || '';
   const disclaimerSize = sig.disclaimerSize || 10;
-  const pronouns = sig.pronouns || '';
 
   const taglineSize = sig.taglineSize || fontSize - 2;
   const taglineColor = sig.taglineColor || accent;
@@ -116,8 +116,6 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   if (sig.emailAddress) contactLines.push({ icon: contactIcon('new-post', accent, contactIconStyle), content: <a href={`mailto:${sig.emailAddress}`} style={{ color: accent, textDecoration: 'none' }}>{sig.emailAddress}</a> });
   if (sig.phone) contactLines.push({ icon: contactIcon('phone', accent, contactIconStyle), content: <span style={{ color: textColor }}>{sig.phone}</span> });
   if (sig.website) contactLines.push({ icon: contactIcon('domain', accent, contactIconStyle), content: <a href={webUrl(sig.website)} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: 'none' }}>{webLabel(sig.website)}</a> });
-  const addr = [sig.addressLine1, sig.addressLine2].filter(Boolean).join(', ');
-  if (addr && showAddress) contactLines.push({ icon: contactIcon('marker', accent, contactIconStyle), content: <span style={{ color: textColor }}>{addr}</span> });
 
   const contactBlock = contactLines.length > 0 ? (() => {
     if (contactLayout === 'two_column' && contactLines.length >= 3) {
@@ -146,7 +144,6 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
       <div style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, lineHeight: `${nameSize + 8}px`, color: nameColor }}>
         <span style={{ fontWeight: nameBold ? 'bold' : 'normal' }}>
           {sig.fullName}
-          {pronouns && <span style={{ fontWeight: 'normal', fontSize: titleSize, color: textColor, opacity: 0.6 }}> ({pronouns})</span>}
         </span>
         {titleEl}
       </div>
@@ -210,7 +207,6 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
           <div>
             <span style={{ fontFamily: `${headingFont}, sans-serif`, fontSize: nameSize, fontWeight: nameBold ? 'bold' : 'normal', color: nameColor }}>
               {sig.fullName}
-              {pronouns && <span style={{ fontWeight: 'normal', fontSize: titleSize, color: textColor, opacity: 0.6 }}> ({pronouns})</span>}
             </span>
             {sig.jobTitle && <span style={{ fontSize: titleSize, color: titleColor, fontStyle: titleItalic ? 'italic' : 'normal' }}> {SEPARATOR_MAP[separator] || '|'} {sig.jobTitle}</span>}
             {sig.company && <span style={{ fontSize: fontSize - 2, color: companyColor }}> {SEPARATOR_MAP[separator] || '|'} {sig.company}</span>}

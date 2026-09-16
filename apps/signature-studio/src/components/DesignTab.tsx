@@ -59,7 +59,7 @@ const DEFAULTS: Record<string, any> = {
   layout: 'Logo Left', accentColor: '#111111', textColor: '#333333', headingFont: 'Arial', bodyFont: 'Arial',
   logoSize: 96, bannerSize: 180, baseTextSize: 14, showDivider: true, roundSocialIcons: true,
   companySize: 13, companyColor: '', companyBold: false, companyItalic: false, companyUppercase: false, companyLetterSpacing: 0,
-  socialIconSize: 24, contactIconStyle: 'dark_mode_safe', showAddress: true,
+  socialIconSize: 24, contactIconStyle: 'dark_mode_safe',
   blockSpacing: 8, logoAlignment: 'top', contactLayout: 'stacked', showNameAccentBar: true,
   nameSize: 0, nameColor: '', nameBold: true, jobTitleSize: 0, jobTitleColor: '', jobTitleItalic: false,
   nameTitleSeparator: 'pipe', logoShape: 'square', dividerColor: '#dddddd', dividerThickness: 1,
@@ -312,7 +312,6 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
       {/* Visibility */}
       <SectionCard icon={Eye} title="Options">
         <div className="space-y-2">
-          <ToggleRow label="Show address" checked={sig.showAddress !== false} onChange={v => updateField('showAddress', v)} />
           <ToggleRow label="Show disclaimer" checked={sig.showDisclaimer ?? false} onChange={v => updateField('showDisclaimer', v)} />
           {sig.showDisclaimer && (
             <SliderRow label="Disclaimer size" value={sig.disclaimerSize || 10} min={8} max={14} step={1} onChange={v => updateField('disclaimerSize', v)} />

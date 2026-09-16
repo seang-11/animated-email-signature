@@ -96,8 +96,6 @@ export type EmailSignaturesRecordType = {
   phone?: string;
   emailAddress?: string;
   website?: string;
-  addressLine1?: string;
-  addressLine2?: string;
   logo?: ZiteAttachment[];
   bannerImage?: ZiteAttachment[];
   linkedInUrl?: string;
@@ -134,7 +132,6 @@ export type EmailSignaturesRecordType = {
   contactIconStyle?: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | string;
   showCompany?: boolean;
   showTagline?: boolean;
-  showAddress?: boolean;
   showSocials?: boolean;
   /** "Block Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
   blockSpacing?: number;
@@ -165,7 +162,6 @@ export type EmailSignaturesRecordType = {
   disclaimerText?: string;
   /** "Disclaimer Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   disclaimerSize?: number;
-  pronouns?: string;
   layoutZones?: string;
   /** "Tagline Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   taglineSize?: number;
@@ -179,6 +175,8 @@ export type EmailSignaturesRecordType = {
   companyUppercase?: boolean;
   /** "Company Letter Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
   companyLetterSpacing?: number;
+  substackUrl?: string;
+  youTubeUrl?: string;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -191,8 +189,6 @@ export type EmailSignaturesRecordInput = {
   phone: string | null;
   emailAddress: string | null;
   website: string | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
   logo: ZiteAttachmentInput[] | ZiteAttachmentInput | null;
   bannerImage: ZiteAttachmentInput[] | ZiteAttachmentInput | null;
   linkedInUrl: string | null;
@@ -222,7 +218,6 @@ export type EmailSignaturesRecordInput = {
   contactIconStyle: "Filled" | "Outlined" | "Dark Mode Safe" | "None" | string | null;
   showCompany: string | boolean | null;
   showTagline: string | boolean | null;
-  showAddress: string | boolean | null;
   showSocials: string | boolean | null;
   blockSpacing: string | number | null;
   logoAlignment: "Top" | "Middle" | "Bottom" | string | null;
@@ -248,7 +243,6 @@ export type EmailSignaturesRecordInput = {
   showDisclaimer: string | boolean | null;
   disclaimerText: string | null;
   disclaimerSize: string | number | null;
-  pronouns: string | null;
   layoutZones: string | null;
   taglineSize: string | number | null;
   taglineColor: string | null;
@@ -259,6 +253,8 @@ export type EmailSignaturesRecordInput = {
   companyItalic: string | boolean | null;
   companyUppercase: string | boolean | null;
   companyLetterSpacing: string | number | null;
+  substackUrl: string | null;
+  youTubeUrl: string | null;
 };
 
 export interface NotificationLink {

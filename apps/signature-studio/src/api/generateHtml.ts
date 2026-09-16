@@ -54,9 +54,7 @@ export default createEndpoint({
 
     const socialIconSize = s.socialIconSize || 24;
     const contactIconStyle = s.contactIconStyle || 'filled';
-    const showAddress = s.showAddress !== false;
-    const showContactIcons = contactIconStyle !== 'none';
-    const isDarkSafe = contactIconStyle === 'dark_mode_safe';
+    const showContactIcons = contactIconStyle !== 'none';    const isDarkSafe = contactIconStyle === 'dark_mode_safe';
     const logoAlign = s.logoAlignment || 'top';
     const contactLayout = s.contactLayout || 'stacked';
     const showAccentBar = s.showNameAccentBar !== false;
@@ -81,7 +79,6 @@ export default createEndpoint({
     const showDisclaimer = s.showDisclaimer ?? false;
     const disclaimerText = s.disclaimerText || '';
     const disclaimerSize = s.disclaimerSize || 10;
-    const pronouns = s.pronouns || '';
 
     const taglineSize = s.taglineSize || fontSize - 2;
     const taglineColor = s.taglineColor || accent;
@@ -108,6 +105,8 @@ export default createEndpoint({
     if (s.threadsUrl) socialsList.push({ url: s.threadsUrl, icon: 'https://cdn-icons-png.flaticon.com/512/14079/14079772.png', label: 'Threads' });
     if (s.xUrl) socialsList.push({ url: s.xUrl, icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968830.png', label: 'X' });
     if (s.tikTokUrl) socialsList.push({ url: s.tikTokUrl, icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' });
+    if (s.youTubeUrl) socialsList.push({ url: s.youTubeUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174883.png', label: 'YouTube' });
+    if (s.substackUrl) socialsList.push({ url: s.substackUrl, icon: 'https://img.icons8.com/color/96/substack.png', label: 'Substack' });
 
     const socialHtml = socialsList.map(sc =>
       `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="${socialIconSize}" height="${socialIconSize}" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
@@ -138,8 +137,7 @@ export default createEndpoint({
     if (s.emailAddress) addRow('new-post', `<a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a>`);
     if (s.phone) addRow('phone', `<span style="color:${textColor};">${s.phone}</span>`);
     if (s.website) addRow('domain', `<a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a>`);
-    const addressParts = [s.addressLine1, s.addressLine2].filter(Boolean).join(', ');
-    if (addressParts && showAddress) addRow('marker', `<span style="color:${textColor};">${addressParts}</span>`);
+
 
     let contactTable = '';
     if (contactRows.length > 0) {
@@ -152,14 +150,13 @@ export default createEndpoint({
     }
 
     /* ─── Name line ─── */
-    const pronounsHtml = pronouns ? ` <span style="font-weight:normal;font-size:${titleSize}px;color:${textColor};opacity:0.6;">(${pronouns})</span>` : '';
     const titleHtml = s.jobTitle ? (
       separator === 'new_line'
         ? `<div style="font-size:${titleSize}px;color:${titleColor};font-weight:normal;${titleItalic ? 'font-style:italic;' : ''}line-height:${titleSize + 6}px;">${s.jobTitle}</div>`
         : `<span style="color:${dividerColor};font-weight:normal;padding:0 7px;">${SEPARATOR_MAP[separator] || '|'}</span><span style="color:${titleColor};font-weight:normal;font-size:${titleSize}px;${titleItalic ? 'font-style:italic;' : ''}">${s.jobTitle}</span>`
     ) : '';
 
-    const nameLineHtml = `<table cellpadding="0" cellspacing="0" border="0"><tr>${showAccentBar ? `<td width="${dividerThickness + 2}" style="width:${dividerThickness + 2}px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}<td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}${pronounsHtml}</span>${titleHtml}</td></tr></table>`;
+    const nameLineHtml = `<table cellpadding="0" cellspacing="0" border="0"><tr>${showAccentBar ? `<td width="${dividerThickness + 2}" style="width:${dividerThickness + 2}px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}<td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}</span>${titleHtml}</td></tr></table>`;
 
     /* ─── Company line ─── */
     const companyLineHtml = s.company
@@ -194,7 +191,7 @@ export default createEndpoint({
     const layout = s.layout || 'Logo Left';
     if (layout === 'Compact') {
       const sep = SEPARATOR_MAP[separator] || '|';
-      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}${pronounsHtml}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr>${disclaimerBlock ? `<tr><td colspan="3" style="padding-top:${spacing}px;">${disclaimerBlock}</td></tr>` : ''}</table>`;
+      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr>${disclaimerBlock ? `<tr><td colspan="3" style="padding-top:${spacing}px;">${disclaimerBlock}</td></tr>` : ''}</table>`;
       return { html };
     }
 

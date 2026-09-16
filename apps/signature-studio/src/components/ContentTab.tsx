@@ -98,6 +98,8 @@ const SOCIAL_FIELDS = [
   { field: 'threadsUrl', label: 'Threads' },
   { field: 'xUrl', label: 'X (Twitter)' },
   { field: 'tikTokUrl', label: 'TikTok' },
+  { field: 'youTubeUrl', label: 'YouTube' },
+  { field: 'substackUrl', label: 'Substack' },
 ];
 
 export default function ContentTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
@@ -106,17 +108,12 @@ export default function ContentTab({ sig, updateField }: { sig: SigData; updateF
       <SectionCard icon={User} title="Identity">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Full name" value={sig.fullName} field="fullName" updateField={updateField} />
-          <Field label="Pronouns" value={sig.pronouns} field="pronouns" updateField={updateField} placeholder="e.g. he/him, she/her" />
           <Field label="Job title" value={sig.jobTitle} field="jobTitle" updateField={updateField} />
           <Field label="Company" value={sig.company} field="company" updateField={updateField} />
           <Field label="Tagline" value={sig.tagline} field="tagline" updateField={updateField} />
           <Field label="Phone" value={sig.phone} field="phone" updateField={updateField} />
           <Field label="Email" value={sig.emailAddress} field="emailAddress" updateField={updateField} />
           <Field label="Website" value={sig.website} field="website" updateField={updateField} />
-          <div className="col-span-1 grid grid-cols-1 gap-3 sm:col-span-2 sm:grid-cols-2">
-            <Field label="Address line 1" value={sig.addressLine1} field="addressLine1" updateField={updateField} />
-            <Field label="Address line 2" value={sig.addressLine2} field="addressLine2" updateField={updateField} />
-          </div>
         </div>
       </SectionCard>
 

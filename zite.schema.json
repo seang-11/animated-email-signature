@@ -79,24 +79,6 @@
           }
         },
         {
-          "id": "ftgs3HT5NKD",
-          "sdkName": "addressLine1",
-          "definition": {
-            "name": "Address Line 1",
-            "type": "single_line_text",
-            "template": {}
-          }
-        },
-        {
-          "id": "fkrtqBTNTXe",
-          "sdkName": "addressLine2",
-          "definition": {
-            "name": "Address Line 2",
-            "type": "single_line_text",
-            "template": {}
-          }
-        },
-        {
           "id": "fqidfQ5hkfA",
           "sdkName": "logo",
           "definition": {
@@ -459,17 +441,6 @@
           }
         },
         {
-          "id": "fq4m6XJBXCc",
-          "sdkName": "showAddress",
-          "definition": {
-            "name": "Show Address",
-            "type": "checkbox",
-            "template": {
-              "defaultValue": true
-            }
-          }
-        },
-        {
           "id": "ftBbaHJxjsX",
           "sdkName": "showSocials",
           "definition": {
@@ -795,15 +766,6 @@
           }
         },
         {
-          "id": "f7FAhuNFvMd",
-          "sdkName": "pronouns",
-          "definition": {
-            "name": "Pronouns",
-            "type": "single_line_text",
-            "template": {}
-          }
-        },
-        {
           "id": "f57S35bVZoa",
           "sdkName": "layoutZones",
           "definition": {
@@ -900,6 +862,24 @@
               "numberFormat": "local",
               "decimalPlaces": 1
             }
+          }
+        },
+        {
+          "id": "fi1QtYf6o55",
+          "sdkName": "substackUrl",
+          "definition": {
+            "name": "Substack URL",
+            "type": "url",
+            "template": {}
+          }
+        },
+        {
+          "id": "fpicS4nVvxz",
+          "sdkName": "youTubeUrl",
+          "definition": {
+            "name": "YouTube URL",
+            "type": "url",
+            "template": {}
           }
         }
       ]

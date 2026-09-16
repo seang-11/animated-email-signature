@@ -8,8 +8,6 @@ const DEFAULT_FIELDS = {
   tagline: '',
   phone: '',
   website: '',
-  addressLine1: '',
-  addressLine2: '',
   logo: null,
   bannerImage: null,
   linkedInUrl: '',
