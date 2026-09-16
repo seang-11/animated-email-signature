@@ -94,9 +94,8 @@ export default createEndpoint({
       // Zone-based layout
       layoutZones: JSON.stringify({
         left: ['logo'],
-        main: ['name', 'company', 'contacts', 'cta', 'socials'],
-        right: ['banner', 'tagline'],
-        bottom: ['disclaimer'],
+        main: ['name', 'company', 'contacts', 'cta', 'socials', 'tagline', 'banner'],
+        bottom: [],
       }),
       isDefault: false,
       template: input.template || '',

@@ -270,7 +270,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
 
   const leftContent = renderZone(zones.left);
   const mainContent = renderZone(zones.main);
-  const rightContent = renderZone(zones.right);
   const bottomContent = renderZone(zones.bottom);
 
   return (
@@ -281,9 +280,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
           <div style={{ width: dividerThickness, background: dividerColor, marginRight: 16, flexShrink: 0, alignSelf: 'stretch' }} />
         )}
         <div style={{ flexGrow: 1 }}>{mainContent}</div>
-        {rightContent && (
-          <div style={{ paddingLeft: 20, flexShrink: 0, maxWidth: 200, textAlign: 'center' as const }}>{rightContent}</div>
-        )}
       </div>
       {bottomContent && <div style={{ marginTop: spacing }}>{bottomContent}</div>}
     </div>

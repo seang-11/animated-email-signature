@@ -3,22 +3,25 @@ import { createEndpoint } from 'zitejs/backend';
 import { zite } from 'zitejs/db';
 
 type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta';
-type ZonesConfig = Record<'left' | 'main' | 'right' | 'bottom', BlockId[]>;
+type ZonesConfig = Record<'left' | 'main' | 'bottom', BlockId[]>;
 
 const VALID_BLOCKS = new Set<string>(['logo', 'name', 'company', 'tagline', 'contacts', 'socials', 'banner', 'cta']);
 
 const PRESET_ZONES: Record<string, ZonesConfig> = {
-  'Logo Left': { left: ['logo'], main: ['name', 'company', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: [] },
-  Stacked: { left: [], main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: [] },
-  Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], right: [], bottom: [] },
+  'Logo Left': { left: ['logo'], main: ['name', 'company', 'contacts', 'cta', 'socials', 'tagline', 'banner'], bottom: [] },
+  Stacked: { left: [], main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'], bottom: [] },
+  Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], bottom: [] },
 };
 
 function getZones(s: any): ZonesConfig {
   if (s.layoutZones) {
     try {
-      const parsed = JSON.parse(s.layoutZones) as ZonesConfig;
+      const parsed = JSON.parse(s.layoutZones) as Record<string, BlockId[]>;
       const out = {} as ZonesConfig;
-      for (const z of ['left', 'main', 'right', 'bottom'] as const) out[z] = (parsed[z] || []).filter(b => VALID_BLOCKS.has(b));
+      for (const z of ['left', 'main', 'bottom'] as const) out[z] = (parsed[z] || []).filter(b => VALID_BLOCKS.has(b));
+      // Fold the retired "right" zone into main so existing signatures keep their blocks.
+      const retired = (parsed.right || []).filter(b => VALID_BLOCKS.has(b) && !out.main.includes(b));
+      if (retired.length) out.main = [...out.main, ...retired];
       return out;
     } catch { /* fall through */ }
   }
@@ -234,7 +237,6 @@ export default createEndpoint({
 
     const leftHtml = renderZoneHtml(zones.left);
     const mainHtml = renderZoneHtml(zones.main);
-    const rightHtml = renderZoneHtml(zones.right);
     const bottomHtml = renderZoneHtml(zones.bottom);
     const logoVAlign = logoAlign === 'middle' ? 'middle' : logoAlign === 'bottom' ? 'bottom' : 'top';
 
@@ -247,9 +249,8 @@ export default createEndpoint({
       cols += `<td width="16" style="width:16px;font-size:1px;line-height:1px;">&nbsp;</td>`;
     }
     cols += `<td style="vertical-align:top;">${mainHtml}</td>`;
-    if (rightHtml) cols += `<td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;">${rightHtml}</td>`;
 
-    const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 2 : 0) + 1 + (rightHtml ? 1 : 0);
+    const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 2 : 0) + 1;
 
     const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr>${cols}</tr>${bottomHtml ? `<tr><td colspan="${colCount}" style="padding-top:${spacing}px;">${bottomHtml}</td></tr>` : ''}</table>`;
     return { html };

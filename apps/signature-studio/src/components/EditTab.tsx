@@ -287,6 +287,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
 
   // Divider sub-section open state
   const [dividerOpen, setDividerOpen] = useState(false);
+  const [layoutOpen, setLayoutOpen] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -382,34 +383,55 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         </div>
       </motion.div>
 
-      {/* ── Layout ── */}
+      {/* ── Layout — collapsible ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.04 }}
-        className="rounded-xl border border-border bg-card p-5 shadow-sm"
+        className="rounded-xl border border-border bg-card shadow-sm"
       >
-        <div className="mb-4 flex items-center gap-2">
+        <button
+          onClick={() => setLayoutOpen(!layoutOpen)}
+          className="flex w-full items-center gap-2 px-5 py-4 text-left"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <LayoutGrid className="h-4 w-4 text-primary-foreground" />
           </div>
           <p className="text-sm font-semibold text-foreground">Layout</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {LAYOUTS.map(l => (
-            <button key={l.value} onClick={() => handlePreset(l.value)}
-              className={`rounded-lg border-2 p-2.5 text-left transition-all ${sig.layout === l.value ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-muted-foreground/30'}`}>
-              <p className="text-xs font-medium text-foreground">{l.label}</p>
-              <p className="text-[10px] text-muted-foreground">{l.desc}</p>
-            </button>
-          ))}
-        </div>
-        {!isCompact && (
-          <div className="mt-3">
-            <p className="mb-1.5 text-[10px] font-medium text-muted-foreground">Drag blocks between zones</p>
-            <BlockArranger zones={zones} onChange={handleZonesChange} />
-          </div>
-        )}
+          <span className="ml-auto mr-2 text-[11px] text-muted-foreground">{sig.layout || 'Logo Left'}</span>
+          <motion.div animate={{ rotate: layoutOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
+        </button>
+        <AnimatePresence initial={false}>
+          {layoutOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-3 gap-2">
+                  {LAYOUTS.map(l => (
+                    <button key={l.value} onClick={() => handlePreset(l.value)}
+                      className={`rounded-lg border-2 p-2.5 text-left transition-all ${sig.layout === l.value ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-muted-foreground/30'}`}>
+                      <p className="text-xs font-medium text-foreground">{l.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{l.desc}</p>
+                    </button>
+                  ))}
+                </div>
+                {!isCompact && (
+                  <div className="mt-3">
+                    <p className="mb-1.5 text-[10px] font-medium text-muted-foreground">Drag blocks between zones</p>
+                    <BlockArranger zones={zones} onChange={handleZonesChange} />
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* ── Block accordion — staggered entry ── */}

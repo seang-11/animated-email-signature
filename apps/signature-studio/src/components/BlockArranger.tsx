@@ -120,7 +120,7 @@ export default function BlockArranger({
   }
 
   function onDragStart(e: DragStartEvent) {
-    setDragZones({ ...zones, left: [...zones.left], main: [...zones.main], right: [...zones.right], bottom: [...zones.bottom] });
+    setDragZones({ ...zones, left: [...zones.left], main: [...zones.main], bottom: [...zones.bottom] });
     setActiveId(e.active.id as string);
   }
 
@@ -170,10 +170,9 @@ export default function BlockArranger({
 
   return (
     <DndContext sensors={sensors} collisionDetection={collision} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
-      <div className="grid grid-cols-[1fr_2fr_1fr] gap-1.5">
+      <div className="grid grid-cols-[1fr_2fr] gap-1.5">
         <Zone id="left" items={current.left} />
         <Zone id="main" items={current.main} />
-        <Zone id="right" items={current.right} />
       </div>
       <div className="mt-1.5">
         <Zone id="bottom" items={current.bottom} />
