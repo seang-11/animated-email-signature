@@ -238,11 +238,16 @@ export default createEndpoint({
 
     let cols = '';
     if (leftHtml) cols += `<td style="vertical-align:${logoVAlign};padding-right:16px;">${leftHtml}</td>`;
-    if (showVerticalDivider && leftHtml) cols += `<td style="vertical-align:top;padding-right:16px;"><div style="width:${dividerThickness}px;min-height:80px;background:${dividerColor};"></div></td>`;
+    // The divider is its own background-filled cell (not an inner div): table cells
+    // stretch to the full row height in every client, while a div's min-height does not.
+    if (showVerticalDivider && leftHtml) {
+      cols += `<td width="${dividerThickness}" style="width:${dividerThickness}px;min-width:${dividerThickness}px;background-color:${dividerColor};font-size:1px;line-height:1px;">&nbsp;</td>`;
+      cols += `<td width="16" style="width:16px;font-size:1px;line-height:1px;">&nbsp;</td>`;
+    }
     cols += `<td style="vertical-align:top;">${mainHtml}</td>`;
     if (rightHtml) cols += `<td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;">${rightHtml}</td>`;
 
-    const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 1 : 0) + 1 + (rightHtml ? 1 : 0);
+    const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 2 : 0) + 1 + (rightHtml ? 1 : 0);
 
     const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr>${cols}</tr>${bottomHtml ? `<tr><td colspan="${colCount}" style="padding-top:${spacing}px;">${bottomHtml}</td></tr>` : ''}</table>`;
     return { html };
