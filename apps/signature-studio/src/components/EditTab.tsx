@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { Input } from '@project/components/ui/input';
 import { Label } from '@project/components/ui/label';
-import { Textarea } from '@project/components/ui/textarea';
 import { Slider } from '@project/components/ui/slider';
 import { Switch } from '@project/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@project/components/ui/select';
@@ -9,7 +8,7 @@ import { Button } from '@project/components/ui/button';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@project/components/ui/accordion';
 import {
   RotateCcw, LayoutGrid, Palette, User, Building2, Quote, Mail, Image as ImageIcon,
-  ImagePlus, Share2, MousePointerClick, FileText, Upload, X,
+  ImagePlus, Share2, MousePointerClick, Upload, X, AlertCircle,
 } from 'lucide-react';
 import { useUpload } from 'zitejs/upload';
 import { toast } from 'sonner';
@@ -142,12 +141,9 @@ function socialsSummary(sig: SigData) {
   return `${n} connected`;
 }
 function ctaSummary(sig: SigData) {
-  if (!sig.showCta) return 'Off';
-  return sig.ctaText || 'No text set';
-}
-function disclaimerSummary(sig: SigData) {
-  if (!sig.showDisclaimer) return 'Off';
-  return `On, ${sig.disclaimerSize || 10}px`;
+  if (!sig.ctaText) return 'Off';
+  if (!sig.ctaUrl) return 'Add a link';
+  return sig.ctaText;
 }
 
 const DEFAULTS: Record<string, any> = {
@@ -159,7 +155,7 @@ const DEFAULTS: Record<string, any> = {
   accentBarColor: '', accentBarThickness: 3,
   nameSize: 0, nameColor: '', nameBold: true, jobTitleSize: 0, jobTitleColor: '', jobTitleItalic: false,
   nameTitleSeparator: 'pipe', logoShape: 'square', dividerColor: '#dddddd', dividerThickness: 1,
-  showCta: false, ctaBackgroundColor: '', ctaTextColor: '#ffffff', showDisclaimer: false, disclaimerSize: 10,
+  ctaBackgroundColor: '', ctaTextColor: '#ffffff',
   taglineSize: 0, taglineColor: '', taglineBold: false, taglineItalic: false, taglineUppercase: true, taglineLetterSpacing: 1,
 };
 
@@ -400,36 +396,18 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-3 pb-1">
-              <ToggleRow label="Show button" checked={sig.showCta ?? false} onChange={v => updateField('showCta', v)} />
-              {sig.showCta && (
-                <>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Button text" value={sig.ctaText} field="ctaText" updateField={updateField} placeholder="Book a Meeting" />
-                    <Field label="Button URL" value={sig.ctaUrl} field="ctaUrl" updateField={updateField} placeholder="https://..." />
-                  </div>
-                  <div><Label className="mb-1 block text-xs text-muted-foreground">Background</Label><ColorPicker value={sig.ctaBackgroundColor || ''} onChange={v => updateField('ctaBackgroundColor', v)} placeholder="Accent" /></div>
-                  <div><Label className="mb-1 block text-xs text-muted-foreground">Text color</Label><ColorPicker value={sig.ctaTextColor || '#ffffff'} onChange={v => updateField('ctaTextColor', v)} /></div>
-                </>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label="Button text" value={sig.ctaText} field="ctaText" updateField={updateField} placeholder="Book a Meeting" />
+                <Field label="Button URL" value={sig.ctaUrl} field="ctaUrl" updateField={updateField} placeholder="https://..." />
+              </div>
+              {sig.ctaText && !sig.ctaUrl && (
+                <div className="flex items-center gap-1.5 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+                  <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                  Add a link to make this button appear in your signature.
+                </div>
               )}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Disclaimer */}
-        <AccordionItem value="disclaimer" className="rounded-xl border border-border bg-card px-4 shadow-sm">
-          <AccordionTrigger className="py-3 hover:no-underline">
-            <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /><span className="text-sm font-medium">Disclaimer</span></div>
-            <span className="mr-2 text-[11px] text-muted-foreground">{disclaimerSummary(sig)}</span>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-3 pb-1">
-              <ToggleRow label="Show disclaimer" checked={sig.showDisclaimer ?? false} onChange={v => updateField('showDisclaimer', v)} />
-              {sig.showDisclaimer && (
-                <>
-                  <Textarea value={sig.disclaimerText || ''} onChange={e => updateField('disclaimerText', e.target.value)} placeholder="This email is confidential..." rows={3} className="text-sm" />
-                  <SliderRow label="Size" value={sig.disclaimerSize || 10} min={8} max={14} step={1} onChange={v => updateField('disclaimerSize', v)} />
-                </>
-              )}
+              <div><Label className="mb-1 block text-xs text-muted-foreground">Background</Label><ColorPicker value={sig.ctaBackgroundColor || ''} onChange={v => updateField('ctaBackgroundColor', v)} placeholder="Accent" /></div>
+              <div><Label className="mb-1 block text-xs text-muted-foreground">Text color</Label><ColorPicker value={sig.ctaTextColor || '#ffffff'} onChange={v => updateField('ctaTextColor', v)} /></div>
             </div>
           </AccordionContent>
         </AccordionItem>

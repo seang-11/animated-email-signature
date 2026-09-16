@@ -158,10 +158,6 @@ export type EmailSignaturesRecordType = {
   ctaUrl?: string;
   ctaBackgroundColor?: string;
   ctaTextColor?: string;
-  showDisclaimer?: boolean;
-  disclaimerText?: string;
-  /** "Disclaimer Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
-  disclaimerSize?: number;
   layoutZones?: string;
   /** "Tagline Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   taglineSize?: number;
@@ -243,9 +239,6 @@ export type EmailSignaturesRecordInput = {
   ctaUrl: string | null;
   ctaBackgroundColor: string | null;
   ctaTextColor: string | null;
-  showDisclaimer: string | boolean | null;
-  disclaimerText: string | null;
-  disclaimerSize: string | number | null;
   layoutZones: string | null;
   taglineSize: string | number | null;
   taglineColor: string | null;

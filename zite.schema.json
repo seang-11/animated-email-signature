@@ -745,37 +745,6 @@
           }
         },
         {
-          "id": "fes9CjCRevh",
-          "sdkName": "showDisclaimer",
-          "definition": {
-            "name": "Show Disclaimer",
-            "type": "checkbox",
-            "template": {}
-          }
-        },
-        {
-          "id": "feULnevkKDe",
-          "sdkName": "disclaimerText",
-          "definition": {
-            "name": "Disclaimer Text",
-            "type": "long_text",
-            "template": {}
-          }
-        },
-        {
-          "id": "fn1a7Rj5LMZ",
-          "sdkName": "disclaimerSize",
-          "definition": {
-            "name": "Disclaimer Size",
-            "type": "number",
-            "template": {
-              "defaultValue": 10,
-              "numberFormat": "local",
-              "decimalPlaces": 1
-            }
-          }
-        },
-        {
           "id": "f57S35bVZoa",
           "sdkName": "layoutZones",
           "definition": {

@@ -1,4 +1,4 @@
-export type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer';
+export type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta';
 export type ZoneId = 'left' | 'main' | 'right' | 'bottom';
 export type ZonesConfig = Record<ZoneId, BlockId[]>;
 
@@ -19,7 +19,6 @@ export const ALL_BLOCKS: { id: BlockId; label: string }[] = [
   { id: 'socials', label: 'Social Icons' },
   { id: 'banner', label: 'Banner' },
   { id: 'cta', label: 'CTA Button' },
-  { id: 'disclaimer', label: 'Disclaimer' },
 ];
 
 const VALID_BLOCKS = new Set<string>(ALL_BLOCKS.map(b => b.id));
@@ -29,19 +28,19 @@ export const PRESET_ZONES: Record<string, ZonesConfig> = {
     left: ['logo'],
     main: ['name', 'company', 'contacts', 'cta', 'socials'],
     right: ['banner', 'tagline'],
-    bottom: ['disclaimer'],
+    bottom: [],
   },
   Stacked: {
     left: [],
     main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'],
     right: [],
-    bottom: ['disclaimer'],
+    bottom: [],
   },
   Compact: {
     left: ['logo'],
     main: ['name', 'company', 'contacts'],
     right: [],
-    bottom: ['disclaimer'],
+    bottom: [],
   },
 };
 

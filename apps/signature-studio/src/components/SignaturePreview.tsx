@@ -115,14 +115,11 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   const dividerColor = sig.dividerColor || '#dddddd';
   const dividerThickness = sig.dividerThickness ?? 1;
   const bannerLinkUrl = sig.bannerLinkUrl || '';
-  const showCta = sig.showCta ?? false;
+  const showCta = !!(sig.ctaText && sig.ctaUrl);
   const ctaText = sig.ctaText || '';
   const ctaUrl = sig.ctaUrl || '';
   const ctaBg = sig.ctaBackgroundColor || accent;
   const ctaTextColor = sig.ctaTextColor || '#ffffff';
-  const showDisclaimer = sig.showDisclaimer ?? false;
-  const disclaimerText = sig.disclaimerText || '';
-  const disclaimerSize = sig.disclaimerSize || 10;
 
   const taglineSize = sig.taglineSize || fontSize - 2;
   const taglineColor = sig.taglineColor || accent;
@@ -184,7 +181,7 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
   const logoImg = logoUrl ? <MaybeLink url={logoLinkUrl}><img src={logoUrl} width={logoSize} alt="Logo" style={{ display: 'block', height: 'auto', borderRadius: logoRadius }} /></MaybeLink> : null;
   const bannerImg = bannerUrl ? <MaybeLink url={bannerLinkUrl}><img src={bannerUrl} width={bannerSize} alt="Banner" style={{ display: 'block' }} /></MaybeLink> : null;
 
-  const ctaButton = showCta && ctaText && ctaUrl ? (
+  const ctaButton = showCta ? (
     <a href={webUrl(ctaUrl)} target="_blank" rel="noreferrer" style={{ display: 'inline-block', padding: '10px 24px', backgroundColor: ctaBg, color: ctaTextColor, borderRadius: '6px', textDecoration: 'none', fontSize: fontSize - 1, fontWeight: 'bold', fontFamily: `${bodyFont}, sans-serif` }}>{ctaText}</a>
   ) : null;
 
@@ -192,10 +189,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
     <div style={{ display: 'flex', gap: 4 }}>
       {socials.map(s => <a key={s.label} href={s.url} target="_blank" rel="noreferrer"><img src={s.src} alt={s.label} width={socialIconSize} height={socialIconSize} style={{ borderRadius: round ? '50%' : 0 }} /></a>)}
     </div>
-  ) : null;
-
-  const disclaimerLine = showDisclaimer && disclaimerText ? (
-    <p style={{ fontSize: disclaimerSize, color: '#999999', lineHeight: `${disclaimerSize + 4}px` }}>{disclaimerText}</p>
   ) : null;
 
   /* ─── Block map with wrappers ─── */
@@ -211,7 +204,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
     socials: w('socials', socialRow),
     banner: w('banner', bannerImg),
     cta: w('cta', ctaButton),
-    disclaimer: w('disclaimer', disclaimerLine),
   };
 
   /* ─── Compact layout ─── */
@@ -232,7 +224,6 @@ export default function SignaturePreview({ sig, activeBlock, onBlockClick }: {
             </div>
           </BlockWrap>
         </div>
-        {disclaimerLine && <div style={{ marginTop: spacing }}>{w('disclaimer', disclaimerLine)}</div>}
       </div>
     );
   }

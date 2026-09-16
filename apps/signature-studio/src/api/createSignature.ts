@@ -76,15 +76,10 @@ export default createEndpoint({
       dividerColor: '#dddddd',
       dividerThickness: 1,
       // CTA
-      showCta: false,
-      ctaText: '',
+      showCta: false,      ctaText: '',
       ctaUrl: '',
       ctaBackgroundColor: '',
       ctaTextColor: '#ffffff',
-      // Disclaimer
-      showDisclaimer: false,
-      disclaimerText: '',
-      disclaimerSize: 10,
       // Tagline styling
       taglineSize: 0,
       taglineColor: '',

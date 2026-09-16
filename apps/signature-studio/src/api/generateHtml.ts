@@ -2,15 +2,15 @@ import { z } from 'zod';
 import { createEndpoint } from 'zitejs/backend';
 import { zite } from 'zitejs/db';
 
-type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer';
+type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta';
 type ZonesConfig = Record<'left' | 'main' | 'right' | 'bottom', BlockId[]>;
 
-const VALID_BLOCKS = new Set<string>(['logo', 'name', 'company', 'tagline', 'contacts', 'socials', 'banner', 'cta', 'disclaimer']);
+const VALID_BLOCKS = new Set<string>(['logo', 'name', 'company', 'tagline', 'contacts', 'socials', 'banner', 'cta']);
 
 const PRESET_ZONES: Record<string, ZonesConfig> = {
-  'Logo Left': { left: ['logo'], main: ['name', 'company', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: ['disclaimer'] },
-  Stacked: { left: [], main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: ['disclaimer'] },
-  Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], right: [], bottom: ['disclaimer'] },
+  'Logo Left': { left: ['logo'], main: ['name', 'company', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: [] },
+  Stacked: { left: [], main: ['logo', 'name', 'company', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: [] },
+  Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], right: [], bottom: [] },
 };
 
 function getZones(s: any): ZonesConfig {
@@ -77,19 +77,16 @@ export default createEndpoint({
     const titleColor = s.jobTitleColor || textColor;
     const titleItalic = s.jobTitleItalic ?? false;
     const separator = s.nameTitleSeparator || 'pipe';
-    const logoShape = s.logoShape || 'square';
+    const logoShape = (s.logoShape || 'square').toLowerCase();
     const logoLinkUrl = s.logoLinkUrl || '';
     const dividerColor = s.dividerColor || '#dddddd';
     const dividerThickness = s.dividerThickness ?? 1;
     const bannerLinkUrl = s.bannerLinkUrl || '';
-    const showCta = s.showCta ?? false;
     const ctaText = s.ctaText || '';
     const ctaUrl = s.ctaUrl || '';
+    const showCta = !!(ctaText && ctaUrl);
     const ctaBg = s.ctaBackgroundColor || accent;
     const ctaTextClr = s.ctaTextColor || '#ffffff';
-    const showDisclaimer = s.showDisclaimer ?? false;
-    const disclaimerText = s.disclaimerText || '';
-    const disclaimerSize = s.disclaimerSize || 10;
 
     const taglineSize = s.taglineSize || fontSize - 2;
     const taglineColor = s.taglineColor || accent;
@@ -185,22 +182,18 @@ export default createEndpoint({
       ? `<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:${ctaBg};border-radius:6px;padding:10px 24px;text-align:center;"><a href="${normalizeUrl(ctaUrl)}" target="_blank" style="color:${ctaTextClr};text-decoration:none;font-size:${fontSize - 1}px;font-weight:bold;font-family:${bodyFont},sans-serif;display:inline-block;">${ctaText}</a></td></tr></table>`
       : '';
 
-    const disclaimerBlock = showDisclaimer && disclaimerText
-      ? `<p style="margin:0;font-size:${disclaimerSize}px;color:#999999;line-height:${disclaimerSize + 4}px;">${disclaimerText}</p>`
-      : '';
-
     /* ─── Block map ─── */
     const blockMap: Record<BlockId, string> = {
       logo: logoHtml, name: nameLineHtml, company: companyLineHtml, tagline: taglineHtml,
       contacts: contactTable, socials: socialBlock, banner: bannerHtml,
-      cta: ctaBlock, disclaimer: disclaimerBlock,
+      cta: ctaBlock,
     };
 
     /* ─── Compact layout ─── */
     const layout = s.layout || 'Logo Left';
     if (layout === 'Compact') {
       const sep = SEPARATOR_MAP[separator] || '|';
-      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr>${disclaimerBlock ? `<tr><td colspan="3" style="padding-top:${spacing}px;">${disclaimerBlock}</td></tr>` : ''}</table>`;
+      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr></table>`;
       return { html };
     }
 
