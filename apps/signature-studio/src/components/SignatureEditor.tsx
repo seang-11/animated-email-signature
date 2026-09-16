@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { loadSignature, saveSignature, createSignature, deleteSignature as deleteSigApi, duplicateSignature } from 'zitejs/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { toast } from 'sonner';
-import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, CloudOff, Maximize2, X } from 'lucide-react';
+import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -32,11 +32,23 @@ const WIDTH_PRESETS = [
   { label: 'Full', px: 0 },
 ];
 
+/* The database stores dropdown values using their display labels ("Dark Mode Safe",
+   "Circle"), while the app works in lowercase keys. Normalize on load so saved
+   choices survive a reload instead of silently falling back to defaults. */
+const SELECT_FIELDS = ['contactIconStyle', 'contactLayout', 'logoAlignment', 'logoShape', 'nameTitleSeparator', 'socialPosition'];
+function normalizeSig(record: SigData): SigData {
+  const out = { ...record };
+  for (const f of SELECT_FIELDS) {
+    if (typeof out[f] === 'string' && out[f]) out[f] = out[f].trim().toLowerCase().replace(/\s+/g, '_');
+  }
+  return out;
+}
+
 export default function SignatureEditor() {
   const [tab, setTab] = useState<'edit' | 'export'>('edit');
   const [signatures, setSignatures] = useState<SigData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [justSaved, setJustSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'dirty' | 'saving' | 'error'>('saved');
   const [showGallery, setShowGallery] = useState(false);
   const [firstRun, setFirstRun] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
@@ -46,26 +58,55 @@ export default function SignatureEditor() {
   const [previewWidth, setPreviewWidth] = useState(0);
 
   const { state: sig, updateField, updateFields, undo, redo, canUndo, canRedo, reset, markSaved, revert } = useUndoRedo(null);
+  const sigRef = useRef<SigData | null>(null);
+  sigRef.current = sig;
 
   const load = useCallback(async (sigId?: string) => {
     try {
       const res: any = await loadSignature({ signatureId: sigId });
       if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); }
-      else { setSignatures(res.signatures); if (res.signature) reset(res.signature); }
+      else { setSignatures(res.signatures); if (res.signature) { reset(normalizeSig(res.signature)); setSaveStatus('saved'); } }
     } catch { toast.error('Failed to load signature'); }
     finally { setLoading(false); }
   }, [reset]);
 
   useEffect(() => { load(); }, [load]);
 
-  const debouncedSave = useDebouncedCallback((data: SigData) => {
-    if (!data.id) return;
+  const doSave = useCallback(async (opts?: { silent?: boolean }) => {
+    const data = sigRef.current;
+    if (!data?.id) return;
     const { id, lastUpdated, owner, ...fields } = data;
-    saveSignature({ id, fields }).then(() => { setJustSaved(true); markSaved(); setTimeout(() => setJustSaved(false), 2000); }).catch(() => toast.error('Save failed'));
-  }, 800);
+    setSaveStatus('saving');
+    try {
+      await saveSignature({ id, fields });
+      markSaved();
+      setSaveStatus('saved');
+      if (!opts?.silent) toast.success('Saved');
+    } catch (err: any) {
+      setSaveStatus('error');
+      toast.error(err?.message ? `Save failed: ${err.message}` : 'Save failed — try the Save button again.');
+    }
+  }, [markSaved]);
 
-  const handleUpdateField = useCallback((key: string, value: any) => { updateField(key, value); }, [updateField]);
-  useEffect(() => { if (sig && sig.id) debouncedSave(sig); }, [sig, debouncedSave]);
+  const debouncedSave = useDebouncedCallback(() => { doSave({ silent: true }); }, 800);
+
+  const handleUpdateField = useCallback((key: string, value: any) => {
+    updateField(key, value);
+    setSaveStatus('dirty');
+  }, [updateField]);
+
+  useEffect(() => { if (sig && sig.id) debouncedSave(); }, [sig, debouncedSave]);
+
+  const saveNow = useCallback(() => { debouncedSave.cancel(); doSave(); }, [debouncedSave, doSave]);
+
+  // Cmd/Ctrl + S saves immediately
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveNow(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [saveNow]);
 
   const handleSwitch = (id: string) => { debouncedSave.flush(); load(id); };
   const handleNew = () => { setGalleryMode('new'); setShowGallery(true); };
@@ -95,7 +136,7 @@ export default function SignatureEditor() {
 
   if (showGallery) return (
     <div className="min-h-screen bg-muted/30">
-      <Header justSaved={false} />
+      <Header status="saved" />
       <TemplateGallery onSelect={handleTemplateSelect} onCancel={galleryMode === 'new' ? () => setShowGallery(false) : undefined} showCancel={galleryMode === 'new'} />
     </div>
   );
@@ -104,7 +145,7 @@ export default function SignatureEditor() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <Header justSaved={justSaved}>
+      <Header status={saveStatus}>
         <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
       </Header>
 
@@ -129,7 +170,14 @@ export default function SignatureEditor() {
             <Button variant="ghost" size="icon" onClick={() => setConfirmRevert(true)} disabled={!canUndo} className="h-8 w-8 text-muted-foreground">
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
+            <Button onClick={saveNow} disabled={saveStatus === 'saving'} className="ml-1 h-8 gap-1.5 px-3 sm:h-9">
+              {saveStatus === 'saving' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              {saveStatus === 'saving' ? 'Saving…' : 'Save'}
+            </Button>
           </div>
+        </div>
+        <div className="mx-auto max-w-7xl px-4 pb-2 sm:px-6">
+          <SaveStatus status={saveStatus} />
         </div>
       </div>
 
@@ -213,7 +261,28 @@ export default function SignatureEditor() {
   );
 }
 
-function Header({ justSaved, children }: { justSaved: boolean; children?: React.ReactNode }) {
+type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
+
+const STATUS_TEXT: Record<SaveState, string> = {
+  saved: 'All changes saved',
+  dirty: 'Unsaved changes',
+  saving: 'Saving…',
+  error: 'Save failed — click Save to retry',
+};
+
+function SaveStatus({ status }: { status: SaveState }) {
+  const Icon = status === 'saving' ? Loader2 : status === 'error' ? AlertCircle : status === 'dirty' ? Save : Check;
+  const tone = status === 'error' ? 'text-destructive' : status === 'dirty' ? 'text-amber-600' : 'text-muted-foreground';
+  return (
+    <p className={`flex items-center gap-1.5 text-[11px] ${tone}`}>
+      <Icon className={`h-3 w-3 ${status === 'saving' ? 'animate-spin' : ''}`} />
+      {STATUS_TEXT[status]}
+    </p>
+  );
+}
+
+function Header({ status, children }: { status: SaveState; children?: React.ReactNode }) {
+  const saved = status === 'saved';
   return (
     <header className="bg-gradient-to-r from-secondary to-primary">
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4">
@@ -229,8 +298,11 @@ function Header({ justSaved, children }: { justSaved: boolean; children?: React.
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             {children}
-            <div className={`hidden items-center gap-1.5 text-xs transition-all duration-500 sm:flex ${justSaved ? 'text-white' : 'text-white/40'}`}>
-              {justSaved ? <><Check className="h-3.5 w-3.5" /> Saved</> : <><CloudOff className="h-3 w-3" /> Auto-saving</>}
+            <div className={`hidden items-center gap-1.5 text-xs sm:flex ${saved ? 'text-white/70' : 'text-white'}`}>
+              {status === 'saving' ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
+                : status === 'error' ? <><AlertCircle className="h-3.5 w-3.5" /> Not saved</>
+                : status === 'dirty' ? <><Save className="h-3.5 w-3.5" /> Unsaved</>
+                : <><Check className="h-3.5 w-3.5" /> Saved</>}
             </div>
           </div>
         </div>
