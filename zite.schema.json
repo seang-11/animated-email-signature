@@ -543,6 +543,17 @@
               "disableColors": false
             }
           }
+        },
+        {
+          "id": "fiy4kVdBguF",
+          "sdkName": "showNameAccentBar",
+          "definition": {
+            "name": "Show Name Accent Bar",
+            "type": "checkbox",
+            "template": {
+              "defaultValue": true
+            }
+          }
         }
       ]
     }

@@ -58,6 +58,7 @@ export default createEndpoint({
       blockSpacing: 8,
       logoAlignment: 'top',
       contactLayout: 'stacked',
+      showNameAccentBar: true,
       isDefault: false,
       template: input.template || '',
     };

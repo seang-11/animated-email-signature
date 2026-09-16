@@ -87,6 +87,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   const logoAlign = sig.logoAlignment || 'top';
   const contactLayout = sig.contactLayout || 'stacked';
   const logoAlignMap: Record<string, string> = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
+  const showAccentBar = sig.showNameAccentBar !== false;
 
   const socials = Object.entries(SOCIAL_ICONS)
     .filter(([key]) => sig[key])
@@ -124,7 +125,7 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
   // Company line
   const companyLine = sig.company && showCompany && (
     <p style={{
-      margin: `2px 0 0 13px`,
+      margin: `2px 0 0 ${showAccentBar ? 13 : 0}px`,
       fontSize: companySize,
       color: companyColor,
       fontWeight: companyBold ? 'bold' : 'normal',
@@ -134,10 +135,10 @@ export default function SignaturePreview({ sig }: { sig: SigData }) {
     </p>
   );
 
-  // Name + job title on one line, behind a thin accent rule
+  // Name + job title on one line, optionally behind a thin accent rule
   const nameLine = (
-    <div style={{ display: 'flex', alignItems: 'stretch', gap: 10 }}>
-      <div style={{ width: 3, background: accent, flexShrink: 0, borderRadius: 2 }} />
+    <div style={{ display: 'flex', alignItems: 'stretch', gap: showAccentBar ? 10 : 0 }}>
+      {showAccentBar && <div style={{ width: 3, background: accent, flexShrink: 0, borderRadius: 2 }} />}
       <div
         style={{
           fontFamily: `${headingFont}, sans-serif`,

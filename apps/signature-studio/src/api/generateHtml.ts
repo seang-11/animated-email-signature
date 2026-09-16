@@ -43,6 +43,7 @@ export default createEndpoint({
     const logoAlign = (s as any).logoAlignment || 'top';
     const contactLayout = (s as any).contactLayout || 'stacked';
     const vAlignMap: Record<string, string> = { top: 'top', middle: 'middle', bottom: 'bottom' };
+    const showAccentBar = (s as any).showNameAccentBar !== false;
 
     const socials: { url: string; icon: string; label: string }[] = [];
     if (s.linkedInUrl) socials.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
@@ -105,14 +106,14 @@ export default createEndpoint({
     const layout = s.layout || 'Logo Left';
 
     const nameLine = `<table cellpadding="0" cellspacing="0" border="0"><tr>
-      <td width="3" style="width:3px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
-      <td style="padding-left:10px;font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;line-height:${fontSize + 12}px;color:${accent};">
+      ${showAccentBar ? `<td width="3" style="width:3px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
+      <td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${fontSize + 4}px;line-height:${fontSize + 12}px;color:${accent};">
         <strong>${s.fullName || ''}</strong>${s.jobTitle ? `<span style="color:#c4c4c4;font-weight:normal;padding:0 7px;">|</span><span style="color:${textColor};font-weight:normal;">${s.jobTitle}</span>` : ''}
       </td>
     </tr></table>`;
 
     const companyLine = s.company && showCompany
-      ? `<p style="margin:2px 0 0 13px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};line-height:${companySize + 5}px;">${s.company}</p>`
+      ? `<p style="margin:2px 0 0 ${showAccentBar ? 13 : 0}px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};line-height:${companySize + 5}px;">${s.company}</p>`
       : '';
 
     const taglineHtml = showTagline && s.tagline

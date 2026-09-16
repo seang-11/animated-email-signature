@@ -74,6 +74,7 @@ const DEFAULTS: Record<string, any> = {
   blockSpacing: 8,
   logoAlignment: 'top',
   contactLayout: 'stacked',
+  showNameAccentBar: true,
 };
 
 export default function DesignTab({ sig, updateField }: { sig: SigData; updateField: (k: string, v: any) => void }) {
@@ -228,6 +229,7 @@ export default function DesignTab({ sig, updateField }: { sig: SigData; updateFi
           <ToggleRow label="Show tagline" checked={sig.showTagline !== false} onChange={v => updateField('showTagline', v)} />
           <ToggleRow label="Show address" checked={sig.showAddress !== false} onChange={v => updateField('showAddress', v)} />
           <ToggleRow label="Show social icons" checked={sig.showSocials !== false} onChange={v => updateField('showSocials', v)} />
+          <ToggleRow label="Name accent bar" checked={sig.showNameAccentBar !== false} onChange={v => updateField('showNameAccentBar', v)} />
           <ToggleRow label="Vertical divider" checked={sig.showDivider !== false} onChange={v => updateField('showDivider', v)} />
         </div>
       </SectionCard>

@@ -140,6 +140,7 @@ export type EmailSignaturesRecordType = {
   blockSpacing?: number;
   logoAlignment?: "Top" | "Middle" | "Bottom" | string;
   contactLayout?: "Stacked" | "Two Column" | string;
+  showNameAccentBar?: boolean;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -188,6 +189,7 @@ export type EmailSignaturesRecordInput = {
   blockSpacing: string | number | null;
   logoAlignment: "Top" | "Middle" | "Bottom" | string | null;
   contactLayout: "Stacked" | "Two Column" | string | null;
+  showNameAccentBar: string | boolean | null;
 };
 
 export interface NotificationLink {
