@@ -68,7 +68,7 @@ export default function SignatureSwitcher({
         </button>
 
         {open && (
-          <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-80 rounded-xl border border-border bg-popover p-2 shadow-xl sm:w-80">
+          <div className="absolute left-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-border bg-popover p-2 shadow-xl">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Your signatures
             </p>

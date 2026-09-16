@@ -155,8 +155,9 @@ export default function SignatureEditor() {
       <Header status={saveStatus} onHelp={tour.start} />
 
       {/* Signature switcher — above the toolbar */}
-      <div className="border-b border-border bg-card/80">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6">
+      <div className="relative z-30 border-b border-border bg-card/80">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-2.5 sm:gap-3 sm:px-6">
+          <span className="text-xs font-medium text-muted-foreground">Editing:</span>
           <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
           <Button variant="outline" size="sm" onClick={handleNew} className="gap-1.5 text-xs shadow-sm">
             <Plus className="h-3.5 w-3.5" /> Create new signature
