@@ -85,6 +85,24 @@ export default createEndpoint({
       showDisclaimer: false,
       disclaimerText: '',
       disclaimerSize: 10,
+      // Tagline styling
+      taglineSize: 0,
+      taglineColor: '',
+      taglineBold: false,
+      taglineItalic: false,
+      taglineUppercase: true,
+      taglineLetterSpacing: 1,
+      // Company styling
+      companyItalic: false,
+      companyUppercase: false,
+      companyLetterSpacing: 0,
+      // Zone-based layout
+      layoutZones: JSON.stringify({
+        left: ['logo'],
+        main: ['name', 'company', 'divider', 'contacts', 'cta', 'socials'],
+        right: ['banner', 'tagline'],
+        bottom: ['disclaimer'],
+      }),
       isDefault: false,
       template: input.template || '',
     };

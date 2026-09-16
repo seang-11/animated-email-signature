@@ -802,6 +802,105 @@
             "type": "single_line_text",
             "template": {}
           }
+        },
+        {
+          "id": "f57S35bVZoa",
+          "sdkName": "layoutZones",
+          "definition": {
+            "name": "Layout Zones",
+            "type": "long_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "faLircehrcL",
+          "sdkName": "taglineSize",
+          "definition": {
+            "name": "Tagline Size",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "fouXUWYrtiX",
+          "sdkName": "taglineColor",
+          "definition": {
+            "name": "Tagline Color",
+            "type": "single_line_text",
+            "template": {}
+          }
+        },
+        {
+          "id": "frjJRSvn4d4",
+          "sdkName": "taglineBold",
+          "definition": {
+            "name": "Tagline Bold",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "f4zmk3zygSU",
+          "sdkName": "taglineItalic",
+          "definition": {
+            "name": "Tagline Italic",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "fhiCvo8JnXR",
+          "sdkName": "taglineUppercase",
+          "definition": {
+            "name": "Tagline Uppercase",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "ffMqQJTrKq9",
+          "sdkName": "taglineLetterSpacing",
+          "definition": {
+            "name": "Tagline Letter Spacing",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
+        },
+        {
+          "id": "f9yZYVQrHVZ",
+          "sdkName": "companyItalic",
+          "definition": {
+            "name": "Company Italic",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "fsU1TzRUsCS",
+          "sdkName": "companyUppercase",
+          "definition": {
+            "name": "Company Uppercase",
+            "type": "checkbox",
+            "template": {}
+          }
+        },
+        {
+          "id": "fmEay2M2etd",
+          "sdkName": "companyLetterSpacing",
+          "definition": {
+            "name": "Company Letter Spacing",
+            "type": "number",
+            "template": {
+              "numberFormat": "local",
+              "decimalPlaces": 1
+            }
+          }
         }
       ]
     }

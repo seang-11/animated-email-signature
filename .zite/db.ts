@@ -166,6 +166,19 @@ export type EmailSignaturesRecordType = {
   /** "Disclaimer Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
   disclaimerSize?: number;
   pronouns?: string;
+  layoutZones?: string;
+  /** "Tagline Size". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  taglineSize?: number;
+  taglineColor?: string;
+  taglineBold?: boolean;
+  taglineItalic?: boolean;
+  taglineUppercase?: boolean;
+  /** "Tagline Letter Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  taglineLetterSpacing?: number;
+  companyItalic?: boolean;
+  companyUppercase?: boolean;
+  /** "Company Letter Spacing". 1 decimal places, format: local (e.g. 1,000,000.50) */
+  companyLetterSpacing?: number;
 };
 
 /** What you may write when creating or updating a record in the "Email Signatures" table. */
@@ -236,6 +249,16 @@ export type EmailSignaturesRecordInput = {
   disclaimerText: string | null;
   disclaimerSize: string | number | null;
   pronouns: string | null;
+  layoutZones: string | null;
+  taglineSize: string | number | null;
+  taglineColor: string | null;
+  taglineBold: string | boolean | null;
+  taglineItalic: string | boolean | null;
+  taglineUppercase: string | boolean | null;
+  taglineLetterSpacing: string | number | null;
+  companyItalic: string | boolean | null;
+  companyUppercase: string | boolean | null;
+  companyLetterSpacing: string | number | null;
 };
 
 export interface NotificationLink {

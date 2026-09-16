@@ -2,13 +2,24 @@ import { z } from 'zod';
 import { createEndpoint } from 'zitejs/backend';
 import { zite } from 'zitejs/db';
 
+type BlockId = 'logo' | 'name' | 'company' | 'tagline' | 'contacts' | 'socials' | 'banner' | 'cta' | 'disclaimer' | 'divider';
+type ZonesConfig = Record<'left' | 'main' | 'right' | 'bottom', BlockId[]>;
+
+const PRESET_ZONES: Record<string, ZonesConfig> = {
+  'Logo Left': { left: ['logo'], main: ['name', 'company', 'divider', 'contacts', 'cta', 'socials'], right: ['banner', 'tagline'], bottom: ['disclaimer'] },
+  Stacked: { left: [], main: ['logo', 'name', 'company', 'divider', 'contacts', 'cta', 'tagline', 'banner', 'socials'], right: [], bottom: ['disclaimer'] },
+  Compact: { left: ['logo'], main: ['name', 'company', 'contacts'], right: [], bottom: ['disclaimer'] },
+};
+
+function getZones(s: any): ZonesConfig {
+  if (s.layoutZones) { try { return JSON.parse(s.layoutZones); } catch { /* fall through */ } }
+  return PRESET_ZONES[s.layout || 'Logo Left'] || PRESET_ZONES['Logo Left'];
+}
+
 const SEPARATOR_MAP: Record<string, string> = { pipe: '|', bullet: '&middot;', dash: '&mdash;' };
 const LOGO_RADIUS: Record<string, string> = { square: '0', rounded: '8px', circle: '50%' };
 
-function normalizeUrl(raw: string) {
-  const v = (raw || '').trim();
-  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
-}
+function normalizeUrl(raw: string) { const v = (raw || '').trim(); return /^https?:\/\//i.test(v) ? v : `https://${v}`; }
 
 export default createEndpoint({
   description: 'Generates email-client-ready HTML for the signature',
@@ -17,11 +28,10 @@ export default createEndpoint({
   outputSchema: z.object({ html: z.string() }),
   execute: async ({ input, context }) => {
     const sig = await zite.emailSignatures.findOne({ id: input.id });
-    if (!sig || !sig.owner?.includes(context.user.id)) {
-      throw new Error('Signature not found or not yours');
-    }
-
+    if (!sig || !sig.owner?.includes(context.user.id)) throw new Error('Signature not found or not yours');
     const s: any = sig;
+
+    /* ─── Extract values ─── */
     const accent = s.accentColor || '#111111';
     const textColor = s.textColor || '#333333';
     const headingFont = s.headingFont || 'Arial';
@@ -31,27 +41,26 @@ export default createEndpoint({
     const bannerSize = s.bannerSize || 180;
     const logoUrl = s.logo?.[0]?.url || '';
     const bannerUrl = s.bannerImage?.[0]?.url || '';
-    const divider = s.showDivider !== false;
+    const showVerticalDivider = s.showDivider !== false;
     const round = s.roundSocialIcons !== false;
     const spacing = s.blockSpacing ?? 8;
 
     const companySize = s.companySize || 13;
     const companyColor = s.companyColor || textColor;
     const companyBold = s.companyBold ?? false;
-    const socialPosition = s.socialPosition || 'under_details';
+    const companyItalic = s.companyItalic ?? false;
+    const companyUppercase = s.companyUppercase ?? false;
+    const companyLS = s.companyLetterSpacing ?? 0;
+
     const socialIconSize = s.socialIconSize || 24;
     const contactIconStyle = s.contactIconStyle || 'filled';
-    const showCompany = s.showCompany !== false;
-    const showTagline = s.showTagline !== false;
     const showAddress = s.showAddress !== false;
-    const showSocials = s.showSocials !== false;
     const showContactIcons = contactIconStyle !== 'none';
     const isDarkSafe = contactIconStyle === 'dark_mode_safe';
     const logoAlign = s.logoAlignment || 'top';
     const contactLayout = s.contactLayout || 'stacked';
     const showAccentBar = s.showNameAccentBar !== false;
 
-    // New fields
     const nameSize = s.nameSize || fontSize + 4;
     const nameColor = s.nameColor || accent;
     const nameBold = s.nameBold !== false;
@@ -74,35 +83,37 @@ export default createEndpoint({
     const disclaimerSize = s.disclaimerSize || 10;
     const pronouns = s.pronouns || '';
 
+    const taglineSize = s.taglineSize || fontSize - 2;
+    const taglineColor = s.taglineColor || accent;
+    const taglineBold = s.taglineBold ?? false;
+    const taglineItalic = s.taglineItalic ?? false;
+    const taglineUppercase = s.taglineUppercase !== false;
+    const taglineLS = s.taglineLetterSpacing ?? 1;
+
     const logoRadius = LOGO_RADIUS[logoShape] || '0';
 
-    // Helpers
+    /* ─── Helpers ─── */
     const wrapLink = (url: string, inner: string) => url ? `<a href="${normalizeUrl(url)}" target="_blank" style="text-decoration:none;">${inner}</a>` : inner;
 
-    const logoImg = logoUrl
-      ? `<img src="${logoUrl}" width="${logoSize}" style="border:0;display:block;height:auto;${logoRadius !== '0' ? `border-radius:${logoRadius};` : ''}" alt="Logo" />`
-      : '';
+    const logoImg = logoUrl ? `<img src="${logoUrl}" width="${logoSize}" style="border:0;display:block;height:auto;${logoRadius !== '0' ? `border-radius:${logoRadius};` : ''}" alt="Logo" />` : '';
     const logoHtml = wrapLink(logoLinkUrl, logoImg);
-
-    const bannerImg = bannerUrl
-      ? `<img src="${bannerUrl}" width="${bannerSize}" style="border:0;display:block;" alt="Banner" />`
-      : '';
+    const bannerImg = bannerUrl ? `<img src="${bannerUrl}" width="${bannerSize}" style="border:0;display:block;" alt="Banner" />` : '';
     const bannerHtml = wrapLink(bannerLinkUrl, bannerImg);
 
-    // Socials
-    const socials: { url: string; icon: string; label: string }[] = [];
-    if (s.linkedInUrl) socials.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
-    if (s.instagramUrl) socials.push({ url: s.instagramUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174855.png', label: 'Instagram' });
-    if (s.facebookUrl) socials.push({ url: s.facebookUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174848.png', label: 'Facebook' });
-    if (s.threadsUrl) socials.push({ url: s.threadsUrl, icon: 'https://cdn-icons-png.flaticon.com/512/14079/14079772.png', label: 'Threads' });
-    if (s.xUrl) socials.push({ url: s.xUrl, icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968830.png', label: 'X' });
-    if (s.tikTokUrl) socials.push({ url: s.tikTokUrl, icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' });
+    /* ─── Socials ─── */
+    const socialsList: { url: string; icon: string; label: string }[] = [];
+    if (s.linkedInUrl) socialsList.push({ url: s.linkedInUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174857.png', label: 'LinkedIn' });
+    if (s.instagramUrl) socialsList.push({ url: s.instagramUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174855.png', label: 'Instagram' });
+    if (s.facebookUrl) socialsList.push({ url: s.facebookUrl, icon: 'https://cdn-icons-png.flaticon.com/512/174/174848.png', label: 'Facebook' });
+    if (s.threadsUrl) socialsList.push({ url: s.threadsUrl, icon: 'https://cdn-icons-png.flaticon.com/512/14079/14079772.png', label: 'Threads' });
+    if (s.xUrl) socialsList.push({ url: s.xUrl, icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968830.png', label: 'X' });
+    if (s.tikTokUrl) socialsList.push({ url: s.tikTokUrl, icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', label: 'TikTok' });
 
-    const socialHtml = showSocials ? socials.map(sc =>
+    const socialHtml = socialsList.map(sc =>
       `<a href="${sc.url}" target="_blank" style="text-decoration:none;margin-right:4px;"><img src="${sc.icon}" alt="${sc.label}" width="${socialIconSize}" height="${socialIconSize}" style="border:0;${round ? 'border-radius:50%;' : ''}" /></a>`
-    ).join('') : '';
+    ).join('');
 
-    // Contact rows
+    /* ─── Contact rows ─── */
     const iconPx = Math.round(fontSize * 0.95);
     const chipSize = iconPx + 8;
     const iconStylePath = isDarkSafe ? 'ios-filled' : (contactIconStyle === 'outlined' ? 'ios' : 'ios-filled');
@@ -140,9 +151,7 @@ export default createEndpoint({
       }
     }
 
-    const layout = s.layout || 'Logo Left';
-
-    // Name line
+    /* ─── Name line ─── */
     const pronounsHtml = pronouns ? ` <span style="font-weight:normal;font-size:${titleSize}px;color:${textColor};opacity:0.6;">(${pronouns})</span>` : '';
     const titleHtml = s.jobTitle ? (
       separator === 'new_line'
@@ -150,93 +159,69 @@ export default createEndpoint({
         : `<span style="color:${dividerColor};font-weight:normal;padding:0 7px;">${SEPARATOR_MAP[separator] || '|'}</span><span style="color:${titleColor};font-weight:normal;font-size:${titleSize}px;${titleItalic ? 'font-style:italic;' : ''}">${s.jobTitle}</span>`
     ) : '';
 
-    const nameLine = `<table cellpadding="0" cellspacing="0" border="0"><tr>
-      ${showAccentBar ? `<td width="${dividerThickness + 2}" style="width:${dividerThickness + 2}px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}
-      <td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};">
-        <span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}${pronounsHtml}</span>${titleHtml}
-      </td>
-    </tr></table>`;
+    const nameLineHtml = `<table cellpadding="0" cellspacing="0" border="0"><tr>${showAccentBar ? `<td width="${dividerThickness + 2}" style="width:${dividerThickness + 2}px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>` : ''}<td style="${showAccentBar ? 'padding-left:10px;' : ''}font-family:${headingFont},sans-serif;font-size:${nameSize}px;line-height:${nameSize + 8}px;color:${nameColor};"><span style="font-weight:${nameBold ? 'bold' : 'normal'};">${s.fullName || ''}${pronounsHtml}</span>${titleHtml}</td></tr></table>`;
 
-    const companyLine = s.company && showCompany
-      ? `<p style="margin:2px 0 0 ${showAccentBar ? 13 : 0}px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};line-height:${companySize + 5}px;">${s.company}</p>`
+    /* ─── Company line ─── */
+    const companyLineHtml = s.company
+      ? `<p style="margin:2px 0 0 ${showAccentBar ? 13 : 0}px;font-size:${companySize}px;color:${companyColor};font-weight:${companyBold ? 'bold' : 'normal'};${companyItalic ? 'font-style:italic;' : ''}${companyUppercase ? 'text-transform:uppercase;' : ''}${companyLS ? `letter-spacing:${companyLS}px;` : ''}line-height:${companySize + 5}px;">${s.company}</p>`
       : '';
 
-    const taglineHtml = showTagline && s.tagline
-      ? `<p style="margin:${spacing}px 0 0;font-size:${fontSize - 2}px;letter-spacing:1px;color:${accent};text-transform:uppercase;">${s.tagline}</p>`
+    /* ─── Tagline ─── */
+    const taglineHtml = s.tagline
+      ? `<p style="margin:0;font-size:${taglineSize}px;letter-spacing:${taglineLS}px;color:${taglineColor};${taglineUppercase ? 'text-transform:uppercase;' : ''}${taglineBold ? 'font-weight:bold;' : ''}${taglineItalic ? 'font-style:italic;' : ''}">${s.tagline}</p>`
       : '';
 
-    const socialBlock = socialHtml ? `<div style="margin-top:${spacing}px;">${socialHtml}</div>` : '';
+    const socialBlock = socialHtml ? `<div style="margin:0;">${socialHtml}</div>` : '';
 
-    // CTA button (bulletproof)
     const ctaBlock = showCta && ctaText && ctaUrl
-      ? `<div style="margin-top:${spacing}px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:${ctaBg};border-radius:6px;padding:10px 24px;text-align:center;"><a href="${normalizeUrl(ctaUrl)}" target="_blank" style="color:${ctaTextClr};text-decoration:none;font-size:${fontSize - 1}px;font-weight:bold;font-family:${bodyFont},sans-serif;display:inline-block;">${ctaText}</a></td></tr></table></div>`
+      ? `<table cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:${ctaBg};border-radius:6px;padding:10px 24px;text-align:center;"><a href="${normalizeUrl(ctaUrl)}" target="_blank" style="color:${ctaTextClr};text-decoration:none;font-size:${fontSize - 1}px;font-weight:bold;font-family:${bodyFont},sans-serif;display:inline-block;">${ctaText}</a></td></tr></table>`
       : '';
 
-    // Disclaimer
     const disclaimerBlock = showDisclaimer && disclaimerText
-      ? `<p style="margin:${spacing + 4}px 0 0;font-size:${disclaimerSize}px;color:#999999;line-height:${disclaimerSize + 4}px;">${disclaimerText}</p>`
+      ? `<p style="margin:0;font-size:${disclaimerSize}px;color:#999999;line-height:${disclaimerSize + 4}px;">${disclaimerText}</p>`
       : '';
 
-    if (layout === 'Stacked') {
-      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
-  ${logoHtml ? `<tr><td style="padding-bottom:${spacing + 4}px;">${logoHtml}</td></tr>` : ''}
-  <tr><td>${nameLine}${companyLine}</td></tr>
-  ${divider ? `<tr><td style="padding:${spacing}px 0;"><hr style="border:0;border-top:${dividerThickness}px solid ${dividerColor};margin:0;" /></td></tr>` : ''}
-  <tr><td style="padding-top:4px;">${contactTable}</td></tr>
-  ${ctaBlock ? `<tr><td>${ctaBlock}</td></tr>` : ''}
-  ${taglineHtml ? `<tr><td>${taglineHtml}</td></tr>` : ''}
-  ${bannerHtml ? `<tr><td style="padding-top:${spacing}px;">${bannerHtml}</td></tr>` : ''}
-  ${socialBlock ? `<tr><td>${socialBlock}</td></tr>` : ''}
-  ${disclaimerBlock ? `<tr><td>${disclaimerBlock}</td></tr>` : ''}
-</table>`;
-      return { html };
-    }
+    const dividerBlock = `<hr style="border:0;border-top:${dividerThickness}px solid ${dividerColor};margin:0;" />`;
 
+    /* ─── Block map ─── */
+    const blockMap: Record<BlockId, string> = {
+      logo: logoHtml, name: nameLineHtml, company: companyLineHtml, tagline: taglineHtml,
+      divider: dividerBlock, contacts: contactTable, socials: socialBlock, banner: bannerHtml,
+      cta: ctaBlock, disclaimer: disclaimerBlock,
+    };
+
+    /* ─── Compact layout ─── */
+    const layout = s.layout || 'Logo Left';
     if (layout === 'Compact') {
       const sep = SEPARATOR_MAP[separator] || '|';
-      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
-  <tr>
-    <td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>
-    ${divider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}
-    <td style="vertical-align:middle;">
-      <span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}${pronounsHtml}</span>
-      ${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}
-      ${s.company && showCompany ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}
-      ${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}
-      ${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}
-      ${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}
-    </td>
-  </tr>
-  ${disclaimerBlock ? `<tr><td colspan="3">${disclaimerBlock}</td></tr>` : ''}
-</table>`;
+      const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr><td style="vertical-align:middle;padding-right:12px;">${logoHtml}</td>${showVerticalDivider ? `<td style="vertical-align:middle;padding-right:12px;"><div style="width:${dividerThickness}px;height:40px;background:${dividerColor};"></div></td>` : ''}<td style="vertical-align:middle;"><span style="font-family:${headingFont},sans-serif;font-size:${nameSize}px;font-weight:${nameBold ? 'bold' : 'normal'};color:${nameColor};">${s.fullName || ''}${pronounsHtml}</span>${s.jobTitle ? ` <span style="font-size:${titleSize}px;color:${titleColor};${titleItalic ? 'font-style:italic;' : ''}">${sep} ${s.jobTitle}</span>` : ''}${s.company ? ` <span style="font-size:${fontSize - 2}px;color:${companyColor};">${sep} ${s.company}</span>` : ''}${s.emailAddress ? ` <span style="font-size:${fontSize - 2}px;">| <a href="mailto:${s.emailAddress}" style="color:${accent};text-decoration:none;">${s.emailAddress}</a></span>` : ''}${s.phone ? ` <span style="font-size:${fontSize - 2}px;color:${textColor};">| ${s.phone}</span>` : ''}${s.website ? ` <span style="font-size:${fontSize - 2}px;">| <a href="${siteHref}" target="_blank" style="color:${accent};text-decoration:none;">${siteLabel}</a></span>` : ''}</td></tr>${disclaimerBlock ? `<tr><td colspan="3" style="padding-top:${spacing}px;">${disclaimerBlock}</td></tr>` : ''}</table>`;
       return { html };
     }
 
-    // Logo Left
-    const socialsInMain = socialPosition === 'under_details' ? socialBlock : '';
-    const socialsInRight = socialPosition === 'right_column' ? socialBlock : '';
-    const hasBannerColumn = bannerUrl || taglineHtml || socialsInRight;
+    /* ─── Zone-based rendering ─── */
+    const zones = getZones(s);
+
+    function renderZoneHtml(blocks: BlockId[]): string {
+      const items = blocks.map(id => blockMap[id]).filter(Boolean);
+      if (items.length === 0) return '';
+      return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;">${items.map((html, i) => `<tr><td${i < items.length - 1 ? ` style="padding-bottom:${spacing}px;"` : ''}>${html}</td></tr>`).join('')}</table>`;
+    }
+
+    const leftHtml = renderZoneHtml(zones.left);
+    const mainHtml = renderZoneHtml(zones.main);
+    const rightHtml = renderZoneHtml(zones.right);
+    const bottomHtml = renderZoneHtml(zones.bottom);
     const logoVAlign = logoAlign === 'middle' ? 'middle' : logoAlign === 'bottom' ? 'bottom' : 'top';
 
-    const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;">
-  <tr>
-    <td style="vertical-align:${logoVAlign};padding-right:16px;">${logoHtml}</td>
-    ${divider ? `<td style="vertical-align:top;padding-right:16px;"><div style="width:${dividerThickness}px;min-height:80px;background:${dividerColor};"></div></td>` : ''}
-    <td style="vertical-align:top;">
-      ${nameLine}
-      ${companyLine}
-      <div style="margin-top:${spacing}px;">${contactTable}</div>
-      ${ctaBlock}
-      ${socialsInMain}
-    </td>
-    ${hasBannerColumn ? `<td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;word-wrap:break-word;">
-      ${bannerHtml}
-      ${taglineHtml}
-      ${socialsInRight}
-    </td>` : ''}
-  </tr>
-  ${disclaimerBlock ? `<tr><td colspan="4">${disclaimerBlock}</td></tr>` : ''}
-</table>`;
+    let cols = '';
+    if (leftHtml) cols += `<td style="vertical-align:${logoVAlign};padding-right:16px;">${leftHtml}</td>`;
+    if (showVerticalDivider && leftHtml) cols += `<td style="vertical-align:top;padding-right:16px;"><div style="width:${dividerThickness}px;min-height:80px;background:${dividerColor};"></div></td>`;
+    cols += `<td style="vertical-align:top;">${mainHtml}</td>`;
+    if (rightHtml) cols += `<td style="vertical-align:top;padding-left:20px;text-align:center;max-width:200px;">${rightHtml}</td>`;
+
+    const colCount = (leftHtml ? 1 : 0) + (showVerticalDivider && leftHtml ? 1 : 0) + 1 + (rightHtml ? 1 : 0);
+
+    const html = `<table cellpadding="0" cellspacing="0" border="0" style="font-family:${bodyFont},sans-serif;max-width:600px;"><tr>${cols}</tr>${bottomHtml ? `<tr><td colspan="${colCount}" style="padding-top:${spacing}px;">${bottomHtml}</td></tr>` : ''}</table>`;
     return { html };
   },
 });
