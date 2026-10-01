@@ -18,7 +18,7 @@ import TemplateGallery, { type TemplateDesign } from './TemplateGallery';
 import GuidedTour, { useTour } from './GuidedTour';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import type { ZonesConfig } from '../utils/zones';
-import { isDemoReadOnly, notifyDemo } from '../utils/demoMode';
+import { isDemoReadOnly, notifyDemo, toDemoSignature } from '../utils/demoMode';
 import { Eye } from 'lucide-react';
 
 export type SigData = Record<string, any>;
@@ -72,11 +72,26 @@ export default function SignatureEditor() {
   const sigRef = useRef<SigData | null>(null);
   sigRef.current = sig;
 
+  const probedRef = useRef(false);
   const load = useCallback(async (sigId?: string) => {
     try {
       const res: any = await loadSignature({ signatureId: sigId });
-      if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); }
-      else { setSignatures(res.signatures); if (res.signature) { reset(normalizeSig(res.signature)); setSaveStatus(demoRef.current ? 'demo' : 'saved'); } }
+      if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); return; }
+      // On first load, check if this is a read-only marketplace demo (a no-op write that the demo blocks)
+      if (!probedRef.current && res.signature) {
+        probedRef.current = true;
+        try { await saveSignature({ id: res.signature.id, fields: { signatureName: res.signature.signatureName ?? '' } }); }
+        catch (err) { if (isDemoReadOnly(err)) { demoRef.current = true; notifyDemo(); } }
+      }
+      let list: SigData[] = res.signatures;
+      let active: SigData | null = res.signature;
+      if (demoRef.current) {
+        // Swap the publisher's real details for fictional sample people
+        list = list.map((r, i) => toDemoSignature(r, i));
+        active = active ? list.find(r => r.id === active!.id) ?? null : null;
+      }
+      setSignatures(list);
+      if (active) { reset(normalizeSig(active)); setSaveStatus(demoRef.current ? 'demo' : 'saved'); }
     } catch { toast.error('Failed to load signature'); }
     finally { setLoading(false); }
   }, [reset]);

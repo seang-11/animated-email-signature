@@ -81,7 +81,9 @@ export default function ExportTab({ sig, flushSave }: { sig: SigData; flushSave?
     setLoading(true);
     try {
       if (flushSave) await flushSave();
-      const res = await generateHtml({ id: sig.id });
+      // Demo signatures exist only in the browser — send their values along
+      const { id, __demo, owner, lastUpdated, ...rest } = sig;
+      const res = await generateHtml(__demo ? { id, overrides: rest } : { id });
       setHtml(res.html);
       return res.html;
     } catch {

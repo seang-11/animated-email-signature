@@ -64,12 +64,16 @@ function fStack(name: string): string { return FONT_STACKS[name] || `${name}, Ar
 export default createEndpoint({
   description: 'Generates email-client-ready HTML for the signature',
   authenticated: true,
-  inputSchema: z.object({ id: z.string() }),
+  inputSchema: z.object({
+    id: z.string(),
+    // Demo mode: unsaved sample values that replace the stored record's fields
+    overrides: z.record(z.any()).optional(),
+  }),
   outputSchema: z.object({ html: z.string() }),
   execute: async ({ input, context }) => {
     const sig = await zite.emailSignatures.findOne({ id: input.id });
     if (!sig || !sig.owner?.includes(context.user.id)) throw new Error('Signature not found or not yours');
-    const s: any = sig;
+    const s: any = { ...sig, ...(input.overrides || {}) };
 
     /* ─── Extract values ─── */
     const accent = s.accentColor || '#111111';
