@@ -60,6 +60,9 @@
       ],
       "@project/components/*": [
         "../../packages/components/*"
+      ],
+      "zitejs/meta": [
+        "./.zite/meta.ts"
       ]
     },
     "module": "ESNext",
