@@ -18,6 +18,8 @@ import TemplateGallery, { type TemplateDesign } from './TemplateGallery';
 import GuidedTour, { useTour } from './GuidedTour';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import type { ZonesConfig } from '../utils/zones';
+import { isDemoReadOnly, notifyDemo } from '../utils/demoMode';
+import { Eye } from 'lucide-react';
 
 export type SigData = Record<string, any>;
 
@@ -50,7 +52,13 @@ export default function SignatureEditor() {
   const [tab, setTab] = useState<'edit' | 'export'>('edit');
   const [signatures, setSignatures] = useState<SigData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'dirty' | 'saving' | 'error'>('saved');
+  const [saveStatus, setSaveStatus] = useState<SaveState>('saved');
+  const demoRef = useRef(false);
+  const enterDemo = useCallback((force = false) => {
+    demoRef.current = true;
+    setSaveStatus('demo');
+    notifyDemo(force);
+  }, []);
   const [showGallery, setShowGallery] = useState(false);
   const [firstRun, setFirstRun] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
@@ -68,7 +76,7 @@ export default function SignatureEditor() {
     try {
       const res: any = await loadSignature({ signatureId: sigId });
       if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); }
-      else { setSignatures(res.signatures); if (res.signature) { reset(normalizeSig(res.signature)); setSaveStatus('saved'); } }
+      else { setSignatures(res.signatures); if (res.signature) { reset(normalizeSig(res.signature)); setSaveStatus(demoRef.current ? 'demo' : 'saved'); } }
     } catch { toast.error('Failed to load signature'); }
     finally { setLoading(false); }
   }, [reset]);
@@ -78,6 +86,8 @@ export default function SignatureEditor() {
   const doSave = useCallback(async (opts?: { silent?: boolean }) => {
     const data = sigRef.current;
     if (!data?.id) return;
+    // In demo mode: skip autosaves entirely; a manual Save just re-shows the notice
+    if (demoRef.current) { if (!opts?.silent) notifyDemo(true); setSaveStatus('demo'); return; }
     const { id, lastUpdated, owner, ...fields } = data;
     setSaveStatus('saving');
     try {
@@ -86,16 +96,17 @@ export default function SignatureEditor() {
       setSaveStatus('saved');
       if (!opts?.silent) toast.success('Saved');
     } catch (err: any) {
+      if (isDemoReadOnly(err)) { enterDemo(!opts?.silent); return; }
       setSaveStatus('error');
       toast.error(err?.message ? `Save failed: ${err.message}` : 'Save failed — try the Save button again.');
     }
-  }, [markSaved]);
+  }, [markSaved, enterDemo]);
 
   const debouncedSave = useDebouncedCallback(() => { doSave({ silent: true }); }, 800);
 
   const handleUpdateField = useCallback((key: string, value: any) => {
     updateField(key, value);
-    setSaveStatus('dirty');
+    setSaveStatus(demoRef.current ? 'demo' : 'dirty');
   }, [updateField]);
 
   useEffect(() => { if (sig && sig.id) debouncedSave(); }, [sig, debouncedSave]);
@@ -121,12 +132,15 @@ export default function SignatureEditor() {
     try {
       const res: any = await createSignature({ signatureName: template ? template.label : 'New Signature', template: template?.key || '', designOverrides: template?.overrides || {} });
       setShowGallery(false); setFirstRun(false); await load(res.signature.id); toast.success('Signature created');
-    } catch { toast.error('Failed to create signature'); }
+    } catch (err) {
+      if (isDemoReadOnly(err)) { setShowGallery(false); enterDemo(true); return; }
+      toast.error('Failed to create signature');
+    }
   };
-  const handleDuplicate = async () => { if (!sig?.id) return; try { const res: any = await duplicateSignature({ id: sig.id }); await load(res.signature.id); toast.success('Duplicated'); } catch { toast.error('Failed to duplicate'); } };
-  const handleDelete = async (id: string) => { try { await deleteSigApi({ id }); await load(); toast.success('Deleted'); } catch (err: any) { toast.error(err?.message || 'Failed to delete'); } };
-  const handleRename = (id: string, name: string) => { saveSignature({ id, fields: { signatureName: name } }).then(() => { setSignatures(prev => prev.map(s => s.id === id ? { ...s, signatureName: name } : s)); if (sig?.id === id) updateField('signatureName', name); }); };
-  const handleSetDefault = (id: string) => { saveSignature({ id, fields: { isDefault: true } }).then(() => { setSignatures(prev => prev.map(s => ({ ...s, isDefault: s.id === id }))); if (sig?.id === id) updateField('isDefault', true); toast.success('Set as default'); }); };
+  const handleDuplicate = async () => { if (!sig?.id) return; try { const res: any = await duplicateSignature({ id: sig.id }); await load(res.signature.id); toast.success('Duplicated'); } catch (err) { if (isDemoReadOnly(err)) return enterDemo(true); toast.error('Failed to duplicate'); } };
+  const handleDelete = async (id: string) => { try { await deleteSigApi({ id }); await load(); toast.success('Deleted'); } catch (err: any) { if (isDemoReadOnly(err)) return enterDemo(true); toast.error(err?.message || 'Failed to delete'); } };
+  const handleRename = (id: string, name: string) => { saveSignature({ id, fields: { signatureName: name } }).then(() => { setSignatures(prev => prev.map(s => s.id === id ? { ...s, signatureName: name } : s)); if (sig?.id === id) updateField('signatureName', name); }).catch(err => { if (isDemoReadOnly(err)) enterDemo(true); else toast.error('Failed to rename'); }); };
+  const handleSetDefault = (id: string) => { saveSignature({ id, fields: { isDefault: true } }).then(() => { setSignatures(prev => prev.map(s => ({ ...s, isDefault: s.id === id }))); if (sig?.id === id) updateField('isDefault', true); toast.success('Set as default'); }).catch(err => { if (isDemoReadOnly(err)) enterDemo(true); else toast.error('Failed to set default'); }); };
   const handleRevert = () => { revert(); setConfirmRevert(false); toast.success('Reverted'); };
 
   const handleBlockClick = (block: string) => {
@@ -284,17 +298,18 @@ export default function SignatureEditor() {
   );
 }
 
-type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
+type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'demo';
 
 const STATUS_TEXT: Record<SaveState, string> = {
   saved: 'All changes saved',
   dirty: 'Unsaved changes',
   saving: 'Saving…',
   error: 'Save failed — click Save to retry',
+  demo: 'Demo mode — changes not saved',
 };
 
 function SaveStatus({ status }: { status: SaveState }) {
-  const Icon = status === 'saving' ? Loader2 : status === 'error' ? AlertCircle : status === 'dirty' ? Save : Check;
+  const Icon = status === 'saving' ? Loader2 : status === 'error' ? AlertCircle : status === 'demo' ? Eye : status === 'dirty' ? Save : Check;
   const tone = status === 'error' ? 'text-destructive' : status === 'dirty' ? 'text-amber-600' : 'text-muted-foreground';
   return (
     <p className={`flex items-center gap-1.5 text-[11px] ${tone}`}>
@@ -328,6 +343,7 @@ function Header({ status, onHelp }: { status: SaveState; onHelp?: () => void }) 
             <div className={`hidden items-center gap-1.5 text-xs sm:flex ${saved ? 'text-white/70' : 'text-white'}`}>
               {status === 'saving' ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
                 : status === 'error' ? <><AlertCircle className="h-3.5 w-3.5" /> Not saved</>
+                : status === 'demo' ? <><Eye className="h-3.5 w-3.5" /> Demo mode</>
                 : status === 'dirty' ? <><Save className="h-3.5 w-3.5" /> Unsaved</>
                 : <><Check className="h-3.5 w-3.5" /> Saved</>}
             </div>
