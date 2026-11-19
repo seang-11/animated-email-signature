@@ -79,4 +79,4 @@ Signature Studio runs on [Zite](https://zite.com). Copy the template into your o
 
 ---
 
-Built by **Sean Grady** at **Prospect Automations** — custom internal tools and automations for small businesses.
+Built by **Sean Grady** at **Prospect Automations** — custom internal tools and automations for small businesses. Email: sean@prospectautomations.com
