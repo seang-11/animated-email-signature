@@ -434,28 +434,51 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
   // Divider sub-section open state
   const [dividerOpen, setDividerOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(() => {
+    try { return localStorage.getItem('sig-studio-theme-open') !== '0'; } catch { return true; }
+  });
+  const toggleTheme = () => setThemeOpen(o => { try { localStorage.setItem('sig-studio-theme-open', o ? '0' : '1'); } catch {} return !o; });
   const [hasDragged, setHasDragged] = useState(() => {
     try { return localStorage.getItem('sig-studio-first-drag') === '1'; } catch { return false; }
   });
 
   return (
     <div className="space-y-4">
-      {/* ── Theme — always open at top ── */}
+      {/* ── Theme — collapsible, open by default ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="surface p-5"
+        className="surface"
         data-tour="theme"
       >
-        <div className="mb-5 flex items-center gap-2">
+        <button onClick={toggleTheme} className="flex w-full items-center gap-2.5 px-5 py-4 text-left">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <Palette className="h-4 w-4 text-primary-foreground" />
           </div>
-          <p className="text-sm font-semibold text-foreground">Theme</p>
-        </div>
-
-        <div className="space-y-5">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">Theme</p>
+            <p className="text-[11px] text-muted-foreground">Colors, fonts & spacing</p>
+          </div>
+          <div className="ml-auto mr-2 flex items-center gap-2">
+            <span className="h-4 w-4 rounded-full border border-border" style={{ background: sig.accentColor || '#111111' }} />
+            <span className="h-4 w-4 rounded-full border border-border" style={{ background: sig.textColor || '#333333' }} />
+            <span className="hidden text-[11px] text-muted-foreground sm:inline">{sig.headingFont || 'Arial'} · {sig.baseTextSize ?? 14}px</span>
+          </div>
+          <motion.div animate={{ rotate: themeOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
+        </button>
+        <AnimatePresence initial={false}>
+        {themeOpen && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+          className="overflow-hidden"
+        >
+        <div className="space-y-5 border-t border-border px-5 pb-5 pt-5">
           {/* Accent color */}
           <div>
             <Label className="mb-1 block text-xs text-muted-foreground">Accent color</Label>
@@ -542,6 +565,9 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
             </AnimatePresence>
           </div>
         </div>
+        </motion.div>
+        )}
+        </AnimatePresence>
       </motion.div>
 
       {/* ── Layout — collapsible ── */}

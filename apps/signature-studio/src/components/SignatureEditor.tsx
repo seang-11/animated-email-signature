@@ -191,7 +191,7 @@ export default function SignatureEditor() {
       </Header>
 
       {/* Toolbar */}
-      <div className="sticky top-12 z-20 border-b border-border bg-background/85 backdrop-blur-md" data-tour="toolbar">
+      <div className="sticky top-14 z-20 border-b border-border bg-background/85 backdrop-blur-md" data-tour="toolbar">
         <div className="mx-auto flex h-11 max-w-[1400px] items-center justify-between gap-2 px-4 sm:px-6">
           <nav className="flex h-full items-center gap-1">
             {tabs.map(t => (
@@ -225,7 +225,7 @@ export default function SignatureEditor() {
           </div>
 
           {/* Preview panel */}
-          <div className="min-w-0 lg:sticky lg:top-[7.5rem] lg:self-start" data-tour="preview">
+          <div className="min-w-0 lg:sticky lg:top-[8rem] lg:self-start" data-tour="preview">
             <div className="mb-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/60" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" /></span>
@@ -325,12 +325,12 @@ function SaveStatus({ status }: { status: SaveState }) {
 function Header({ status, onHelp, children }: { status: SaveState; onHelp?: () => void; children?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-12 max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-card">
-            <img src={LOGO_URL} alt="Prospect Automations" className="h-4 w-4 object-contain" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+            <img src={LOGO_URL} alt="Prospect Automations" className="h-5 w-5 object-contain" />
           </div>
-          <span className="hidden whitespace-nowrap text-[13px] font-semibold tracking-tight text-foreground sm:inline">Signature Studio</span>
+          <span className="hidden whitespace-nowrap text-[15px] font-semibold tracking-tight text-foreground sm:inline">Signature Studio</span>
           {children}
         </div>
         <div className="flex items-center gap-1">
