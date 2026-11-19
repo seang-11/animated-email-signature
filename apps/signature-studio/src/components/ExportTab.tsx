@@ -7,7 +7,7 @@ import type { SigData } from './SignatureEditor';
 
 function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+    <div className="surface p-5">
       <div className="mb-4 flex items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
           <Icon className="h-3.5 w-3.5 text-primary" />

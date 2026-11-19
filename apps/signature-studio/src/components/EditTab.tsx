@@ -344,7 +344,7 @@ function SortableSection({
       >
       <AccordionItem
         value={section.key}
-        className="rounded-xl border border-border bg-card pl-2 pr-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 group"
+        className="surface pl-2 pr-3 transition-colors duration-150 hover:border-foreground/20 group"
       >
         <div className="flex items-center">
           <span
@@ -445,7 +445,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="rounded-xl border border-border bg-card p-5 shadow-sm"
+        className="surface p-5"
         data-tour="theme"
       >
         <div className="mb-5 flex items-center gap-2">
@@ -549,7 +549,7 @@ export default function EditTab({ sig, updateField, activeBlock, onActiveBlockCh
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.04 }}
-        className="rounded-xl border border-border bg-card shadow-sm"
+        className="surface"
         data-tour="layout"
       >
         <button

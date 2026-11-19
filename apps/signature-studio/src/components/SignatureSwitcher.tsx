@@ -61,14 +61,14 @@ export default function SignatureSwitcher({
       <div ref={ref} className="relative">
         <button
           onClick={() => { setOpen(!open); setMenuId(null); }}
-          className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+          className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
         >
           <span className="max-w-[160px] truncate">{activeName}</span>
           <ChevronDown className="h-3.5 w-3.5 opacity-60" />
         </button>
 
         {open && (
-          <div className="absolute left-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-border bg-popover p-2 shadow-xl">
+          <div className="absolute left-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-border bg-popover p-1.5 shadow-lg">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Your signatures
             </p>

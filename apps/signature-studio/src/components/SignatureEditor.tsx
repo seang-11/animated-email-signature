@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { loadSignature, saveSignature, createSignature, deleteSignature as deleteSigApi, duplicateSignature } from 'zitejs/api';
 import { useDebouncedCallback } from 'use-debounce';
 import { toast } from 'sonner';
-import { Pen, Share2, Check, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, AlertCircle, GripVertical, HelpCircle, Plus } from 'lucide-react';
+import { Pen, Share2, Undo2, Redo2, RotateCcw, Maximize2, X, Save, Loader2, GripVertical, HelpCircle, Plus } from 'lucide-react';
 import { Button } from '@project/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -170,7 +170,7 @@ export default function SignatureEditor() {
   if (loading) return <div className="flex h-screen items-center justify-center bg-background"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
   if (showGallery) return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
       <Header status="saved" />
       <TemplateGallery onSelect={handleTemplateSelect} onCancel={galleryMode === 'new' ? () => setShowGallery(false) : undefined} showCancel={galleryMode === 'new'} />
     </div>
@@ -179,94 +179,84 @@ export default function SignatureEditor() {
   if (!sig) return <div className="p-8 text-center text-muted-foreground">Could not load signature.</div>;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <Header status={saveStatus} onHelp={tour.start} />
-
-      {/* Signature switcher — above the toolbar */}
-      <div className="relative z-30 border-b border-border bg-card/80" data-tour="switcher">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-2.5 sm:gap-3 sm:px-6">
-          <span className="text-xs font-medium text-muted-foreground">Editing:</span>
+    <div className="min-h-screen bg-background">
+      <Header status={saveStatus} onHelp={tour.start}>
+        <div className="flex min-w-0 items-center gap-1.5" data-tour="switcher">
+          <span className="text-border">/</span>
           <SignatureSwitcher signatures={signatures} activeId={sig.id} onSwitch={handleSwitch} onNew={handleNew} onDuplicate={handleDuplicate} onDelete={handleDelete} onRename={handleRename} onSetDefault={handleSetDefault} />
-          <Button variant="outline" size="sm" onClick={handleNew} className="gap-1.5 text-xs shadow-sm">
-            <Plus className="h-3.5 w-3.5" /> Create new signature
+          <Button variant="ghost" size="sm" onClick={handleNew} className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground">
+            <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">New</span>
           </Button>
         </div>
-      </div>
+      </Header>
 
       {/* Toolbar */}
-      <div className="border-b border-border bg-card" data-tour="toolbar">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
-          <div className="inline-flex rounded-lg bg-muted p-1">
+      <div className="sticky top-12 z-20 border-b border-border bg-background/85 backdrop-blur-md" data-tour="toolbar">
+        <div className="mx-auto flex h-11 max-w-[1400px] items-center justify-between gap-2 px-4 sm:px-6">
+          <nav className="flex h-full items-center gap-1">
             {tabs.map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all sm:gap-2 sm:px-4 ${tab === t.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                <t.icon className="h-4 w-4" /><span className="hidden sm:inline">{t.label}</span>
+                className={`relative flex h-full items-center gap-1.5 px-2.5 text-[13px] font-medium transition-colors ${tab === t.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                <t.icon className="h-3.5 w-3.5" />{t.label}
+                {tab === t.key && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-foreground" />}
               </button>
             ))}
-          </div>
+          </nav>
           <div className="flex items-center gap-1" data-tour="undo">
-            <Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
-              <Undo2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Undo</span>
-            </Button>
-            <Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} className="h-8 w-8 text-muted-foreground sm:h-9 sm:w-auto sm:gap-1.5 sm:px-3">
-              <Redo2 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Redo</span>
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setConfirmRevert(true)} disabled={!canUndo} className="h-8 w-8 text-muted-foreground">
-              <RotateCcw className="h-3.5 w-3.5" />
-            </Button>
-            <Button onClick={saveNow} disabled={saveStatus === 'saving'} className="ml-1 h-8 gap-1.5 px-3 sm:h-9">
+            <SaveStatus status={saveStatus} />
+            <div className="mx-2 hidden h-4 w-px bg-border sm:block" />
+            <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" className="h-7 w-7 text-muted-foreground"><Undo2 className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)" className="h-7 w-7 text-muted-foreground"><Redo2 className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => setConfirmRevert(true)} disabled={!canUndo} title="Revert to last saved" className="h-7 w-7 text-muted-foreground"><RotateCcw className="h-3.5 w-3.5" /></Button>
+            <Button onClick={saveNow} disabled={saveStatus === 'saving'} size="sm" className="ml-1.5 h-7 gap-1.5 px-2.5 text-xs">
               {saveStatus === 'saving' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-              {saveStatus === 'saving' ? 'Saving…' : 'Save'}
+              Save <span className="hidden rounded bg-primary-foreground/15 px-1 font-mono text-[10px] sm:inline">⌘S</span>
             </Button>
           </div>
-        </div>
-        <div className="mx-auto max-w-7xl px-4 pb-2 sm:px-6">
-          <SaveStatus status={saveStatus} />
         </div>
       </div>
 
       {/* Body */}
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div>
+      <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 sm:py-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-8">
+          <div className="min-w-0">
             {tab === 'edit' && <EditTab sig={sig} updateField={handleUpdateField} activeBlock={activeBlock} onActiveBlockChange={setActiveBlock} />}
             {tab === 'export' && <ExportTab sig={sig} flushSave={flushSave} />}
           </div>
 
           {/* Preview panel */}
-          <div className="lg:sticky lg:top-6 lg:self-start" data-tour="preview">
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Live Preview</p>
-                <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground/70">
-                  <GripVertical className="h-3 w-3" /> Drag any part to rearrange it — click to edit
-                </p>
+          <div className="min-w-0 lg:sticky lg:top-[7.5rem] lg:self-start" data-tour="preview">
+            <div className="mb-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/60" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" /></span>
+                <p className="text-[13px] font-medium text-foreground">Live preview</p>
+                <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><GripVertical className="h-3 w-3" /> Drag to rearrange · click to edit</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)} className="h-7 gap-1 text-xs text-muted-foreground">
+              <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)} className="h-7 gap-1 px-2 text-xs text-muted-foreground">
                 <Maximize2 className="h-3.5 w-3.5" /> Expand
               </Button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-md">
-              <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-2.5">
-                <div className="h-3 w-3 rounded-full bg-red-400" /><div className="h-3 w-3 rounded-full bg-yellow-400" /><div className="h-3 w-3 rounded-full bg-green-400" />
-                <span className="ml-3 text-xs text-muted-foreground">New Message</span>
+            <div className="surface overflow-hidden">
+              <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5">
+                <div className="h-2.5 w-2.5 rounded-full bg-border" /><div className="h-2.5 w-2.5 rounded-full bg-border" /><div className="h-2.5 w-2.5 rounded-full bg-border" />
+                <span className="ml-3 text-xs font-medium text-muted-foreground">New message</span>
               </div>
-              <div className="space-y-1 border-b border-border bg-muted/20 px-5 py-3 text-xs text-muted-foreground">
-                <div><span className="font-medium text-foreground/60">From:</span> {sig.fullName || 'You'} &lt;{sig.emailAddress || 'you@company.com'}&gt;</div>
-                <div><span className="font-medium text-foreground/60">Subject:</span> <span className="italic text-muted-foreground/60">Your subject here</span></div>
+              <div className="divide-y divide-border border-b border-border text-xs">
+                <div className="flex gap-3 px-5 py-2"><span className="w-12 text-muted-foreground">From</span><span className="truncate text-foreground">{sig.fullName || 'You'} <span className="text-muted-foreground">&lt;{sig.emailAddress || 'you@company.com'}&gt;</span></span></div>
+                <div className="flex gap-3 px-5 py-2"><span className="w-12 text-muted-foreground">Subject</span><span className="text-muted-foreground/70">Quick follow-up</span></div>
               </div>
-              <div className="overflow-x-auto bg-white px-5 py-4">
-                <div className="mb-6 space-y-1.5 text-sm text-gray-400">
-                  <div className="h-2.5 w-3/4 rounded bg-gray-100" /><div className="h-2.5 w-1/2 rounded bg-gray-100" /><div className="h-2.5 w-2/3 rounded bg-gray-100" />
+              <div className="overflow-x-auto bg-white px-5 py-5">
+                <div className="mb-6 space-y-2">
+                  <div className="h-2 w-3/4 rounded-full bg-gray-100" /><div className="h-2 w-1/2 rounded-full bg-gray-100" /><div className="h-2 w-2/3 rounded-full bg-gray-100" />
                 </div>
-                <div className="border-t border-gray-100 pl-5 pt-4">
+                <div className="pt-2">
                   <SignaturePreview sig={sig} activeBlock={activeBlock} onBlockClick={handleBlockClick} onZonesChange={handleZonesChange} />
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Preview overlay */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
@@ -323,45 +313,37 @@ const STATUS_TEXT: Record<SaveState, string> = {
 };
 
 function SaveStatus({ status }: { status: SaveState }) {
-  const Icon = status === 'saving' ? Loader2 : status === 'error' ? AlertCircle : status === 'demo' ? Eye : status === 'dirty' ? Save : Check;
-  const tone = status === 'error' ? 'text-destructive' : status === 'dirty' ? 'text-amber-600' : 'text-muted-foreground';
+  const dot = status === 'error' ? 'bg-destructive' : status === 'dirty' ? 'bg-amber-500' : status === 'demo' ? 'bg-sky-500' : status === 'saving' ? 'bg-primary animate-pulse' : 'bg-emerald-500';
   return (
-    <p className={`flex items-center gap-1.5 text-[11px] ${tone}`}>
-      <Icon className={`h-3 w-3 ${status === 'saving' ? 'animate-spin' : ''}`} />
+    <span className={`hidden items-center gap-1.5 text-xs sm:inline-flex ${status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       {STATUS_TEXT[status]}
-    </p>
+    </span>
   );
 }
 
-function Header({ status, onHelp }: { status: SaveState; onHelp?: () => void }) {
-  const saved = status === 'saved';
+function Header({ status, onHelp, children }: { status: SaveState; onHelp?: () => void; children?: React.ReactNode }) {
   return (
-    <header className="bg-gradient-to-r from-secondary to-primary">
-      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm sm:h-12 sm:w-12">
-              <img src={LOGO_URL} alt="Prospect Automations" className="h-full w-full object-contain" />
-            </div>
-            <div className="leading-tight">
-              <h1 className="text-base font-semibold text-white sm:text-lg">Signature Studio</h1>
-              <p className="hidden text-xs text-white/70 sm:block">by Prospect Automations</p>
-            </div>
+    <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
+      <div className="mx-auto flex h-12 max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-card">
+            <img src={LOGO_URL} alt="Prospect Automations" className="h-4 w-4 object-contain" />
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            {onHelp && (
-              <Button variant="ghost" size="sm" onClick={onHelp} className="gap-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white">
-                <HelpCircle className="h-4 w-4" /> <span className="hidden sm:inline">Show me around</span>
-              </Button>
-            )}
-            <div className={`hidden items-center gap-1.5 text-xs sm:flex ${saved ? 'text-white/70' : 'text-white'}`}>
-              {status === 'saving' ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
-                : status === 'error' ? <><AlertCircle className="h-3.5 w-3.5" /> Not saved</>
-                : status === 'demo' ? <><Eye className="h-3.5 w-3.5" /> Demo mode</>
-                : status === 'dirty' ? <><Save className="h-3.5 w-3.5" /> Unsaved</>
-                : <><Check className="h-3.5 w-3.5" /> Saved</>}
-            </div>
-          </div>
+          <span className="hidden whitespace-nowrap text-[13px] font-semibold tracking-tight text-foreground sm:inline">Signature Studio</span>
+          {children}
+        </div>
+        <div className="flex items-center gap-1">
+          {status === 'demo' && (
+            <span className="hidden items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
+              <Eye className="h-3 w-3" /> Demo
+            </span>
+          )}
+          {onHelp && (
+            <Button variant="ghost" size="sm" onClick={onHelp} className="h-7 gap-1.5 px-2 text-xs text-muted-foreground">
+              <HelpCircle className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Tour</span>
+            </Button>
+          )}
         </div>
       </div>
     </header>

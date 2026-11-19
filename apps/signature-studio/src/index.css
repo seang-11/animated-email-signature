@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
 
 
 @tailwind base;
@@ -7,60 +7,60 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 220 20% 98.5%;
+    --foreground: 228 14% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 228 14% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 228 14% 11%;
 
-    --primary: 223 78% 57%;
+    --primary: 228 76% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 225 14% 95%;
+    --secondary-foreground: 228 14% 18%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 44%;
+    --muted: 225 16% 95.5%;
+    --muted-foreground: 225 8% 45%;
 
-    --accent: 48 97% 77%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 228 60% 96%;
+    --accent-foreground: 228 60% 38%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 4%;
+    --destructive: 2 72% 54%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 223 78% 57%;
+    --border: 225 14% 90%;
+    --input: 225 14% 88%;
+    --ring: 228 76% 58%;
 
-    --chart-1: 223 78% 57%;
-    --chart-2: 12 70% 55%;
-    --chart-3: 173 70% 36%;
-    --chart-4: 257 70% 55%;
-    --chart-5: 43 70% 40%;
+    --chart-1: 228 76% 58%;
+    --chart-2: 162 60% 42%;
+    --chart-3: 32 90% 55%;
+    --chart-4: 340 70% 56%;
+    --chart-5: 200 70% 48%;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 223 78% 57%;
+    --sidebar-foreground: 228 14% 11%;
+    --sidebar-primary: 228 76% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 48 97% 77%;
-    --sidebar-accent-foreground: 0 0% 4%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 223 78% 57%;
+    --sidebar-accent: 228 60% 96%;
+    --sidebar-accent-foreground: 228 60% 38%;
+    --sidebar-border: 225 14% 90%;
+    --sidebar-ring: 228 76% 58%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --font-sans: 'Roboto', sans-serif;
-    --font-mono: 'Roboto Mono', monospace;
+    --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
     --shadow-x: 0px;
     --shadow-y: 1px;
-    --shadow-blur: 4px;
+    --shadow-blur: 2px;
     --shadow-spread: 0px;
-    --shadow-opacity: 0.2;
-    --shadow-color: #000000;
-    --shadow-rgb: 0 0 0;
+    --shadow-opacity: 0.06;
+    --shadow-color: #0b0d14;
+    --shadow-rgb: 11 13 20;
 
     --shadow-2xs: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / calc(var(--shadow-opacity) * 0.5));
     --shadow-xs: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) rgb(var(--shadow-rgb) / calc(var(--shadow-opacity) * 0.5));
@@ -124,7 +124,11 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+    letter-spacing: -0.006em;
   }
+  h1, h2, h3 { letter-spacing: -0.02em; }
+  ::selection { background: hsl(var(--primary) / 0.18); }
 }
 
 @keyframes gradient-shift {
@@ -144,4 +148,21 @@
   border-radius: var(--radius);
   transition: box-shadow 0.3s ease, z-index 0s;
   background: hsl(var(--card));
+}
+
+/* Linear-style surfaces */
+.surface {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: 0 1px 0 rgb(var(--shadow-rgb) / 0.03), 0 1px 3px rgb(var(--shadow-rgb) / 0.04);
+}
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
 }
