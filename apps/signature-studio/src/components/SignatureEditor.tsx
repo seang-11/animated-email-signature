@@ -60,7 +60,6 @@ export default function SignatureEditor() {
     notifyDemo(force);
   }, []);
   const [showGallery, setShowGallery] = useState(false);
-  const [firstRun, setFirstRun] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
   const [galleryMode, setGalleryMode] = useState<'first-run' | 'new'>('first-run');
   const [activeBlock, setActiveBlock] = useState('');
@@ -68,7 +67,7 @@ export default function SignatureEditor() {
   const [previewWidth, setPreviewWidth] = useState(0);
   const tour = useTour();
 
-  const { state: sig, updateField, updateFields, undo, redo, canUndo, canRedo, reset, markSaved, revert } = useUndoRedo(null);
+  const { state: sig, updateField, undo, redo, canUndo, canRedo, reset, markSaved, revert } = useUndoRedo(null);
   const sigRef = useRef<SigData | null>(null);
   sigRef.current = sig;
 
@@ -76,7 +75,7 @@ export default function SignatureEditor() {
   const load = useCallback(async (sigId?: string) => {
     try {
       const res: any = await loadSignature({ signatureId: sigId });
-      if (res.firstRun) { setFirstRun(true); setShowGallery(true); setGalleryMode('first-run'); return; }
+      if (res.firstRun) { setShowGallery(true); setGalleryMode('first-run'); return; }
       // On first load, check if this is a read-only marketplace demo (a no-op write that the demo blocks)
       if (!probedRef.current && res.signature) {
         probedRef.current = true;
@@ -146,7 +145,7 @@ export default function SignatureEditor() {
   const handleTemplateSelect = async (template: TemplateDesign | null) => {
     try {
       const res: any = await createSignature({ signatureName: template ? template.label : 'New Signature', template: template?.key || '', designOverrides: template?.overrides || {} });
-      setShowGallery(false); setFirstRun(false); await load(res.signature.id); toast.success('Signature created');
+      setShowGallery(false); await load(res.signature.id); toast.success('Signature created');
     } catch (err) {
       if (isDemoReadOnly(err)) { setShowGallery(false); enterDemo(true); return; }
       toast.error('Failed to create signature');

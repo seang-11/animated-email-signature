@@ -17,7 +17,7 @@ import type { SigData } from './SignatureEditor';
 import ColorPicker from './ColorPicker';
 import BlockArranger from './BlockArranger';
 import InfoTip from './InfoTip';
-import { FONTS as FONT_DEFS, FONT_GROUPS, fontStack, isPreviewOnly } from '../utils/fonts';
+import { FONTS as FONT_DEFS, FONT_GROUPS, fontStack } from '../utils/fonts';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';

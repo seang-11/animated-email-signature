@@ -2,32 +2,6 @@ import { z } from 'zod';
 import { createEndpoint } from 'zitejs/backend';
 import { zite } from 'zitejs/db';
 
-const DEFAULT_FIELDS = {
-  jobTitle: '',
-  company: '',
-  tagline: '',
-  phone: '',
-  website: '',
-  logo: null,
-  bannerImage: null,
-  linkedInUrl: '',
-  instagramUrl: '',
-  facebookUrl: '',
-  threadsUrl: '',
-  xUrl: '',
-  tikTokUrl: '',
-  layout: 'Logo Left',
-  accentColor: '#111111',
-  textColor: '#333333',
-  headingFont: 'Arial',
-  bodyFont: 'Arial',
-  logoSize: 96,
-  baseTextSize: 14,
-  bannerSize: 180,
-  showDivider: true,
-  roundSocialIcons: true,
-};
-
 export default createEndpoint({
   description: 'Lists all signatures for the signed-in user, loading the default or first one',
   authenticated: true,
