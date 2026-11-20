@@ -5,6 +5,8 @@ Built by [Prospect Automations](https://prospectautomations.com) on [Zite](https
 
 Pick a template, add your details, shape the look, and copy a finished signature straight into Gmail, Outlook or Apple Mail — no HTML knowledge required.
 
+**[▶ Try it / copy it on the Zite Marketplace](https://www.zite.com/marketplace/custom-email-signature)**
+
 ---
 
 ## Features
@@ -73,9 +75,23 @@ Pick a template, add your details, shape the look, and copy a finished signature
 - **Per-user data isolation.** Every endpoint requires sign-in and only reads or writes the signed-in user's own signatures.
 - **Privacy-safe demo.** In the read-only marketplace demo, real names and contact details are swapped for fictional people on the client, while the designs stay intact. Saves are skipped gracefully instead of erroring.
 
-## Getting started
+## Get Signature Studio
 
-Signature Studio runs on [Zite](https://zite.com). Copy the template into your own Zite workspace — the database, sign-in and hosting are included, and you can start editing immediately.
+There are two ways to use Signature Studio yourself:
+
+### Option 1 — Copy it on Zite (recommended)
+
+👉 **[Get Signature Studio on the Zite Marketplace](https://www.zite.com/marketplace/custom-email-signature)**
+
+1. Open the marketplace listing and try the live demo.
+2. Sign up for a free Zite account (or sign in).
+3. Click to copy the solution into your own workspace.
+
+The database, sign-in and hosting come included — no setup, no deploys. You can start building signatures immediately and customize the app with Zite's AI editor.
+
+### Option 2 — Download the code
+
+Clone or download this repository to explore the source, adapt it, or use it as a reference. The app is built for the Zite platform (endpoints, database and auth use the `zitejs` SDK), so the easiest way to run it end-to-end is still to copy it from the [Zite Marketplace](https://www.zite.com/marketplace/custom-email-signature).
 
 ---
 
